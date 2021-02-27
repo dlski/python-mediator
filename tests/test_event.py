@@ -1,11 +1,17 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Mapping, Type
+from typing import Any, Mapping, Type
 
 import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
-from mediator.event import EventHandlerRegistry, LocalEventBus
+from mediator.event import (
+    ConfigEventAggregateError,
+    EventAggregate,
+    EventHandlerRegistry,
+    EventPublisher,
+    LocalEventBus,
+)
 
 
 @dataclass
@@ -52,3 +58,62 @@ async def test_local_event_bus():
         for i in seq:
             event = events[i]
             await asyncio.wait_for(event.wait(), timeout=0.5)
+
+
+class _MockupEventPublisher(EventPublisher):
+    def __init__(self):
+        self.calls = []
+
+    async def publish(self, obj: Any, **kwargs):
+        self.calls.append((obj, kwargs))
+
+    def clear(self):
+        self.calls.clear()
+
+
+@dataclass
+class _MockupAggregateEvent1:
+    value: int
+
+
+@dataclass
+class _MockupAggregateEvent2:
+    value: str
+
+
+class _MockupAggregate(EventAggregate):
+    def add_event1(self, value: int):
+        self._enqueue(_MockupAggregateEvent1(value))
+
+    def add_event2(self, value: str):
+        self._enqueue(_MockupAggregateEvent2(value), test="test")
+
+
+@pytest.mark.asyncio
+async def test_event_aggregate():
+    publisher = _MockupEventPublisher()
+    aggregate = _MockupAggregate()
+
+    with pytest.raises(ConfigEventAggregateError):
+        await aggregate.commit()
+
+    aggregate.use(publisher)
+
+    aggregate.add_event1(1)
+    aggregate.add_event1(2)
+    aggregate.add_event2("event")
+    await aggregate.commit()
+    assert publisher.calls == [
+        (_MockupAggregateEvent1(1), {}),
+        (_MockupAggregateEvent1(2), {}),
+        (_MockupAggregateEvent2("event"), {"test": "test"}),
+    ]
+    publisher.clear()
+
+    await aggregate.commit()
+    assert publisher.calls == []
+
+    aggregate.add_event2("test")
+    aggregate.cleanup()
+    await aggregate.commit()
+    assert publisher.calls == []
