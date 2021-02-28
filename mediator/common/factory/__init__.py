@@ -21,7 +21,7 @@ from mediator.common.factory.mappers import (
 )
 from mediator.common.factory.policies import (
     CallableHandlerPolicy,
-    CallableHandlerPolicyOwner,
+    MappablePolicy,
     MethodHandlerPolicy,
     PolicyType,
 )
@@ -46,7 +46,7 @@ __all__ = [
     "TypeHandlerFactoryMapper",
     # policy
     "CallableHandlerPolicy",
-    "CallableHandlerPolicyOwner",
+    "MappablePolicy",
     "MethodHandlerPolicy",
     "PolicyType",
 ]
