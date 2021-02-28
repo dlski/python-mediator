@@ -1,6 +1,7 @@
 import asyncio
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Any, Mapping, Type
+from typing import Any, AsyncContextManager, Mapping, Type
 
 import pytest
 
@@ -71,6 +72,21 @@ class _MockupEventPublisher(EventPublisher):
         self.calls.clear()
 
 
+class _ExpectMockupEventPublisher(_MockupEventPublisher):
+    def __init__(self, expected_calls):
+        super().__init__()
+        self.expected_calls = expected_calls
+
+    @asynccontextmanager
+    async def transaction(self) -> AsyncContextManager:
+        nested_publisher = _MockupEventPublisher()
+        before_calls = list(self.calls)
+        yield nested_publisher
+        assert nested_publisher.calls == self.expected_calls
+        assert self.calls == before_calls
+        self.calls.extend(nested_publisher.calls)
+
+
 @dataclass
 class _MockupAggregateEvent1:
     value: int
@@ -91,25 +107,27 @@ class _MockupAggregate(EventAggregate):
 
 @pytest.mark.asyncio
 async def test_event_aggregate():
-    publisher = _MockupEventPublisher()
     aggregate = _MockupAggregate()
 
     with pytest.raises(ConfigEventAggregateError):
         await aggregate.commit()
 
-    aggregate.use(publisher)
-
+    aggregate.use(
+        _ExpectMockupEventPublisher(
+            [
+                (_MockupAggregateEvent1(1), {}),
+                (_MockupAggregateEvent1(2), {}),
+                (_MockupAggregateEvent2("event"), {"test": "test"}),
+            ]
+        )
+    )
     aggregate.add_event1(1)
     aggregate.add_event1(2)
     aggregate.add_event2("event")
     await aggregate.commit()
-    assert publisher.calls == [
-        (_MockupAggregateEvent1(1), {}),
-        (_MockupAggregateEvent1(2), {}),
-        (_MockupAggregateEvent2("event"), {"test": "test"}),
-    ]
-    publisher.clear()
 
+    publisher = _MockupEventPublisher()
+    aggregate.use(publisher)
     await aggregate.commit()
     assert publisher.calls == []
 

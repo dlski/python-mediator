@@ -27,8 +27,11 @@ class EventAggregate:
         publisher = self._publisher
         if publisher is None:
             raise ConfigEventAggregateError(f"Publisher is not set in {self!r}")
-        for obj, kwargs in self._staged:
-            await publisher.publish(obj, **kwargs)
+
+        async with publisher.transaction() as context:
+            for obj, kwargs in self._staged:
+                await context.publish(obj, **kwargs)
+
         self._staged.clear()
 
     def cleanup(self):
