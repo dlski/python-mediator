@@ -21,6 +21,7 @@ class CallableType:
 @dataclass
 class CallableIODetails:
     args: List[CallableArg]
+    has_kwargs: bool
     return_type: Optional[Any]
 
     def arg_by_name(self, name: str) -> Optional[CallableArg]:
@@ -51,6 +52,7 @@ class CallableInspector:
         io_details = cls.io_details(fn)
         return CallableDetails(
             args=io_details.args,
+            has_kwargs=io_details.has_kwargs,
             return_type=io_details.return_type,
             is_routine=type_.is_routine,
             is_method=type_.is_method,
@@ -83,5 +85,9 @@ class CallableInspector:
                 for param in signature.parameters.values()
                 if param.kind in cls._kinds
             ],
+            has_kwargs=any(
+                param.kind == Parameter.VAR_KEYWORD
+                for param in signature.parameters.values()
+            ),
             return_type=annotations.get("return"),
         )

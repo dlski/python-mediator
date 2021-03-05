@@ -15,11 +15,16 @@ class _Base:
 
 
 class _A(_Base):
+    # noinspection PyMethodMayBeStatic
     async def a(self, arg: str, x: int, y: int):
         return arg, x, y
 
+    # noinspection PyMethodMayBeStatic
     async def b(self, *, arg: str, a: int, b: int):
         return arg, a, b
+
+    async def c(self, arg: str, a: int):
+        return arg, a, a + 1
 
 
 async def _check_handler(handler: Handler):
@@ -31,8 +36,9 @@ async def _check_handler(handler: Handler):
 @pytest.mark.parametrize(
     "obj, policy",
     [
-        (_A().a, CallableHandlerPolicy()),
-        (_A().b, CallableHandlerPolicy(arg_map={"x": "a", "y": "b"})),
+        (_A().a, CallableHandlerPolicy(arg_strict=True)),
+        (_A().b, CallableHandlerPolicy(arg_map={"x": "a", "y": "b"}, arg_strict=True)),
+        (_A().c, CallableHandlerPolicy(arg_map={"x": "a"})),
     ],
 )
 @pytest.mark.asyncio

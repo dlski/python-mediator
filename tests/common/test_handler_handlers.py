@@ -8,12 +8,12 @@ async def _fn(*args, **kwargs):
     return args, kwargs
 
 
-class SpecificError(Exception):
+class _SpecificError(Exception):
     pass
 
 
 async def _error_fn(*arg, **kwargs):
-    raise SpecificError(f"{arg} {kwargs}")
+    raise _SpecificError(f"{arg} {kwargs}")
 
 
 def _result(*args, **kwargs):
@@ -37,25 +37,31 @@ async def test_direct_handler_call(action: ActionSubject):
 @pytest.mark.asyncio
 async def test_direct_handler_error(action: ActionSubject):
     handler = DirectHandler(handler=_error_fn, fn=_error_fn, key=str)
-    with pytest.raises(SpecificError):
+    with pytest.raises(_SpecificError):
         await handler(action)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "subject_name, arg_map, expected_result",
+    "subject_name, arg_map, arg_filter, expected_result",
     [
-        (None, {}, _result("test", a=10, b=20)),
-        ("subject", {}, _result(subject="test", a=10, b=20)),
-        (None, {"a": "x"}, _result("test", x=10, b=20)),
-        ("subject", {"a": "x", "b": "y"}, _result(subject="test", x=10, y=20)),
+        (None, {}, None, _result("test", a=10, b=20)),
+        ("subject", {}, None, _result(subject="test", a=10, b=20)),
+        (None, {"a": "x"}, None, _result("test", x=10, b=20)),
+        ("subject", {"a": "x", "b": "y"}, None, _result(subject="test", x=10, y=20)),
+        ("subject", {"a": "x", "b": "y"}, {"x"}, _result(subject="test", x=10)),
     ],
 )
+@pytest.mark.asyncio
 async def test_mapped_direct_handler_call(
-    action, subject_name, arg_map, expected_result
+    action, subject_name, arg_map, arg_filter, expected_result
 ):
     handler = MappedDirectHandler(
-        handler=_fn, fn=_fn, key=str, subject_name=subject_name, arg_map=arg_map
+        handler=_fn,
+        fn=_fn,
+        key=str,
+        subject_name=subject_name,
+        arg_map=arg_map,
+        arg_filter=arg_filter,
     )
     assert handler.key == str
     result = await handler(action)
@@ -66,7 +72,12 @@ async def test_mapped_direct_handler_call(
 @pytest.mark.asyncio
 async def test_mapped_direct_handler_error(action):
     handler = MappedDirectHandler(
-        handler=_error_fn, fn=_error_fn, key=str, subject_name="subject", arg_map={}
+        handler=_error_fn,
+        fn=_error_fn,
+        key=str,
+        subject_name="subject",
+        arg_map={},
+        arg_filter=None,
     )
-    with pytest.raises(SpecificError):
+    with pytest.raises(_SpecificError):
         await handler(action)

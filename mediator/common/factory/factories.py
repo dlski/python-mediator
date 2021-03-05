@@ -16,7 +16,9 @@ class CallableHandlerFactory(HandlerFactory):
         self._obj_details = CallableObjDetails()
         self._arg_get = HandlerSubjectArgGet(name=policy.subject_arg)
         self._handler_create = DirectHandlerCreate(
-            subject_as_keyword=policy.subject_as_keyword, arg_map=policy.arg_map
+            subject_as_keyword=policy.subject_as_keyword,
+            arg_map=policy.arg_map,
+            arg_strict=policy.arg_strict,
         )
 
     def create(self, obj: Any) -> Handler:
@@ -35,6 +37,7 @@ class MethodHandlerFactory(HandlerFactory):
         self._handler_create = DirectHandlerCreate(
             subject_as_keyword=callable_policy.subject_as_keyword,
             arg_map=callable_policy.arg_map,
+            arg_strict=callable_policy.arg_strict,
         )
 
     def create(self, obj: Any) -> Handler:

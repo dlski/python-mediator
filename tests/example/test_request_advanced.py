@@ -22,6 +22,7 @@ class PrintCommand:
 
 
 class PrintCommandHandler:
+    # noinspection PyMethodMayBeStatic
     async def execute(self, command: PrintCommand):
         print(f"print: {command.message}")
         return command.message

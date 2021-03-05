@@ -90,9 +90,12 @@ class HandlerSubjectArgGet:
 
 
 class DirectHandlerCreate:
-    def __init__(self, subject_as_keyword: bool, arg_map: Dict[str, str]):
+    def __init__(
+        self, subject_as_keyword: bool, arg_map: Dict[str, str], arg_strict: bool
+    ):
         self.subject_as_keyword = subject_as_keyword
         self.arg_map = arg_map
+        self.arg_strict = arg_strict
 
     def __call__(self, details: CallableDetails, arg: CallableArg, obj: Any) -> Handler:
         if not details.is_async:
@@ -101,10 +104,15 @@ class DirectHandlerCreate:
             subject_name = arg.name
         else:
             subject_name = None
+        if self.arg_strict or details.has_kwargs:
+            arg_filter = None
+        else:
+            arg_filter = {arg.name for arg in details.args}
         return MappedDirectHandler(
             handler=obj,
             fn=details.obj,
             key=arg.type,
             subject_name=subject_name,
             arg_map=self.arg_map,
+            arg_filter=arg_filter,
         )

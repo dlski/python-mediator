@@ -11,6 +11,7 @@ class MappablePolicy:
 class CallableHandlerPolicy(MappablePolicy):
     subject_arg: Optional[str] = None
     arg_map: Dict[str, str] = field(default_factory=dict)
+    arg_strict: bool = False
 
     @property
     def subject_as_keyword(self):

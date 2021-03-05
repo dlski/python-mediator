@@ -167,7 +167,9 @@ async def test_direct_handler_create_successful(
     get_details = CallableObjDetails()
     arg_get = HandlerSubjectArgGet(name=name)
     handler_create = DirectHandlerCreate(
-        subject_as_keyword=name is not None, arg_map=arg_map
+        subject_as_keyword=name is not None,
+        arg_map=arg_map,
+        arg_strict=True,
     )
 
     details = get_details(sig)
@@ -189,7 +191,9 @@ async def test_direct_handler_create_successful(
 def test_direct_handler_create_fail(obj, error, error_message):
     get_details = CallableObjDetails()
     arg_get = HandlerSubjectArgGet(name="arg")
-    handler_create = DirectHandlerCreate(subject_as_keyword=False, arg_map={})
+    handler_create = DirectHandlerCreate(
+        subject_as_keyword=False, arg_map={}, arg_strict=True
+    )
 
     details = get_details(obj)
     arg = arg_get(details)

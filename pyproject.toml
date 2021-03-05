@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-mediator"
-version = "0.3.0"
+version = "0.4.0"
 description = "Python mediator bus microframework for CQRS, Event-driven approaches"
 authors = ["Damian Łukawski <damian@lukawscy.pl>"]
 license = "MIT"

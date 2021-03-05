@@ -53,6 +53,7 @@ class Methods:
         assert details.is_async
         _check_arg(details.args, types=[X, int], positionals=[False, False])
 
+    # noinspection PyUnusedLocal
     @staticmethod
     async def d(x: "X", other: "int") -> "X":
         return x
