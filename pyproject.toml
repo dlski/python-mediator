@@ -4,6 +4,9 @@ version = "0.4.1"
 description = "Python mediator bus microframework for CQRS + ES, Event-driven approaches"
 authors = ["Damian Łukawski <damian@lukawscy.pl>"]
 license = "MIT"
+packages = [
+    { include = "mediator" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.7 <3.10"
