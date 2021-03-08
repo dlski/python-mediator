@@ -50,15 +50,15 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         cascade: Optional[HandlerFactoryCascade] = None,
         operators: Sequence[OperatorDef] = (),
     ):
-        executor_store = _EventSchedulerHandlerStore()
+        scheduler_store = _EventSchedulerHandlerStore()
         HandlerRegistry.__init__(
             self,
-            store=executor_store,
+            store=scheduler_store,
             policies=policies or [CallableHandlerPolicy()],
             cascade=cascade,
             operators=operators,
         )
-        self._executor = executor_store
+        self._scheduler = scheduler_store
 
     async def publish(self, obj: Any, **kwargs):
-        self._executor.schedule(ActionSubject(subject=obj, inject=kwargs))
+        self._scheduler.schedule(ActionSubject(subject=obj, inject=kwargs))
