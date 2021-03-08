@@ -1,6 +1,6 @@
 # python-mediator
 Elastic and extensible asyncio CQRS + ES python microframework.
-Compatible with recent python versions: 3.7, 3.8, 3.9.
+Compatible with recent python versions: 3.7, 3.8, 3.9, pypy3.
 
 Corresponds to clean architecture patterns, ideal for
 command/query segregation scenarios and event-driven design approaches.
