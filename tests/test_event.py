@@ -61,6 +61,22 @@ async def test_local_event_bus():
             await asyncio.wait_for(event.wait(), timeout=0.5)
 
 
+@pytest.mark.asyncio
+async def test_local_event_bus_sync():
+    cnt = {"test": 0}
+
+    async def _handler(event: str):
+        await asyncio.sleep(0.0)
+        cnt[event] += 1
+
+    policies = [CallableHandlerPolicy()]
+    bus = LocalEventBus(policies=policies, sync_mode=True)
+    bus.register(_handler, policies=policies)
+    bus.register(_handler, policies=policies)
+    await bus.publish("test")
+    assert cnt["test"] == 2
+
+
 class _MockupEventPublisher(EventPublisher):
     def __init__(self):
         self.calls = []

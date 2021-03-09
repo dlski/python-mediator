@@ -1,4 +1,14 @@
-from mediator.common.factory import CallableHandlerPolicy, MethodHandlerPolicy
+from mediator.common.factory import (
+    CallableHandlerPolicy,
+    MappablePolicy,
+    MethodHandlerPolicy,
+)
+
+
+def test_base_handler_policy():
+    policy = MappablePolicy()
+    returned_policy = policy.replace_map(None)
+    assert returned_policy is policy
 
 
 def test_callable_handler_policy():
