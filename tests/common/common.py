@@ -31,7 +31,7 @@ class MockupOperatorDef(OperatorDef):
     def __eq__(self, other):
         return isinstance(other, type(self)) and self.seq_id == other.seq_id
 
-    def create(self, call: ActionCallType) -> ActionCallType:
+    def create(self, call: ActionCallType, **kwargs) -> ActionCallType:
         async def _op(action: ActionSubject):
             seq = action.inject.get("seq")
             assert isinstance(seq, list), "'seq' list not provided"

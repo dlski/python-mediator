@@ -6,13 +6,17 @@ from mediator.common.types import ActionResult, ActionSubject
 
 class DirectHandler(Handler):
     def __init__(self, handler: Any, fn: Callable[..., Awaitable[Any]], key: Hashable):
-        self.handler = handler
+        self._handler = handler
         self._fn = fn
         self._key = key
 
     @property
     def key(self) -> Hashable:
         return self._key
+
+    @property
+    def obj(self) -> Any:
+        return self._handler
 
     async def __call__(self, action: ActionSubject) -> ActionResult:
         result = await self._fn(action.subject, **action.inject)

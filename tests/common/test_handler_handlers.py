@@ -29,6 +29,7 @@ def action():
 async def test_direct_handler_call(action: ActionSubject):
     handler = DirectHandler(handler=_fn, fn=_fn, key=str)
     assert handler.key == str
+    assert handler.obj == _fn
     result = await handler(action)
     assert isinstance(result, ActionResult)
     assert result.result == _result("test", a=10, b=20)
@@ -64,6 +65,7 @@ async def test_mapped_direct_handler_call(
         arg_filter=arg_filter,
     )
     assert handler.key == str
+    assert handler.obj == _fn
     result = await handler(action)
     assert isinstance(result, ActionResult)
     assert result.result == expected_result
