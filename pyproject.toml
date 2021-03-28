@@ -1,11 +1,24 @@
 [tool.poetry]
 name = "python-mediator"
-version = "0.5.0"
+version = "0.5.1"
 description = "Python mediator bus microframework for CQRS + ES"
 authors = ["Damian Łukawski <damian@lukawscy.pl>"]
 license = "MIT"
 packages = [
     { include = "mediator" },
+]
+readme = "README.md"
+homepage = "https://github.com/dlski/python-mediator"
+repository = "https://github.com/dlski/python-mediator"
+keywords = ["mediator", "cqrs", "event-driven", "enterprise"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3 :: Only",
 ]
 
 [tool.poetry.dependencies]
