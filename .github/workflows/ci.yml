@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/**'
+      - 'hotfix/**'
+    tags:
+      - '**'
+  pull_request: {}
+
+jobs:
+  lints:
+    name: Code lints
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      #----------------------------------------------
+      #        load pip cache if cache exists
+      #----------------------------------------------
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip
+          restore-keys: ${{ runner.os }}-pip
+      #----------------------------------------------
+      #          install and run linters
+      #----------------------------------------------
+      - run: python -m pip install black flake8 isort
+      - run: |
+          flake8 .
+          black . --check
+          isort .
+
+  tests:
+    needs: [lints]
+    name: Test python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.8', '3.9', 'pypy-3.7']
+    env:
+      PYTHONPATH: .
+      PYTHON: ${{ matrix.python-version }}
+
+    steps:
+      #----------------------------------------------
+      #    check-out repo and set-up environment
+      #----------------------------------------------
+      - uses: actions/checkout@v2
+      - name: Set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: snok/install-poetry@v1.1.2
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      #----------------------------------------------
+      #       setup only test dependencies
+      #----------------------------------------------
+      - name: Remove lint dependencies
+        run: |
+          mv pyproject.toml ~pyproject.toml
+          cat ~pyproject.toml | sed '/^black =/d' | sed '/^isort =/d'| sed '/^flake8[a-zA-Z-]* =/d' > pyproject.toml
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+      #----------------------------------------------
+      #        run tests with code coverage
+      #----------------------------------------------
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          pytest --cov
+        env:
+          COVERAGE_FILE: coverage/.coverage.py${{ matrix.python-version }}
+      #----------------------------------------------
+      #             store code coverage
+      #----------------------------------------------
+      - name: Store coverage files
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: coverage
+
+  coverage-upload:
+    needs: [tests]
+    name: Coverage upload
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #              setup environment
+      #----------------------------------------------
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Setup depdendencies
+        run: pip install coverage
+      #----------------------------------------------
+      #            prepare coverage data
+      #----------------------------------------------
+      - name: Get coverage files
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage
+          path: coverage
+      - name: Combine coverage files
+        run: |
+          coverage combine coverage
+          coverage report
+          coverage xml
+      #----------------------------------------------
+      #             upload code coverage
+      #----------------------------------------------
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+  build-deploy:
+    name: Build & deploy
+    needs: [lints, tests]
+    if: "success() && startsWith(github.ref, 'refs/tags/')"
+    env:
+      POETRY_PYPI_TOKEN_PYPI: "{{ secrets.PYPI_TOKEN }}"
+
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - uses: snok/install-poetry@v1.1.2
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      #----------------------------------------------
+      #          build and deploy with poetry
+      #----------------------------------------------
+      - name: Build & deploy
+        run: |
+          poetry publish --build
