@@ -1,4 +1,12 @@
 # python-mediator
+
+[![CI](https://github.com/dlski/python-mediator/workflows/CI/badge.svg?event=push)](https://github.com/dlski/python-mediator/actions?query=event%3Apush+branch%3Amaster+workflow%3ACI)
+[![codecov](https://codecov.io/gh/dlski/python-mediator/branch/master/graph/badge.svg?token=DXIZA2T8W6)](https://codecov.io/gh/dlski/python-mediator)
+[![pypi](https://img.shields.io/pypi/v/python-mediator.svg)](https://pypi.python.org/pypi/python-mediator)
+[![downloads](https://img.shields.io/pypi/dm/python-mediator.svg)](https://pypistats.org/packages/python-mediator)
+[![versions](https://img.shields.io/pypi/pyversions/python-mediator.svg)](https://github.com/dlski/python-mediator)
+[![license](https://img.shields.io/github/license/dlski/python-mediator.svg)](https://github.com/dlski/python-mediator/blob/master/LICENSE)
+
 Elastic and extensible asyncio CQRS + ES python microframework.
 Compatible with recent python versions: 3.7, 3.8, 3.9, pypy3.
 
