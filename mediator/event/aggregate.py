@@ -37,5 +37,5 @@ class EventAggregate:
     def cleanup(self):
         self._staged.clear()
 
-    def _enqueue(self, obj: Any, **kwargs):
+    def enqueue(self, obj: Any, **kwargs):
         self._staged.append((obj, kwargs))

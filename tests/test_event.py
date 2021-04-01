@@ -115,10 +115,10 @@ class _MockupAggregateEvent2:
 
 class _MockupAggregate(EventAggregate):
     def add_event1(self, value: int):
-        self._enqueue(_MockupAggregateEvent1(value))
+        self.enqueue(_MockupAggregateEvent1(value))
 
     def add_event2(self, value: str):
-        self._enqueue(_MockupAggregateEvent2(value), test="test")
+        self.enqueue(_MockupAggregateEvent2(value), test="test")
 
 
 @pytest.mark.asyncio

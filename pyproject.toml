@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-mediator"
-version = "0.5.3"
+version = "0.6.0"
 description = "Python mediator bus microframework for CQRS + ES"
 authors = ["Damian Łukawski <damian@lukawscy.pl>"]
 license = "MIT"

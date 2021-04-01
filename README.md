@@ -1,6 +1,6 @@
 # python-mediator
 
-[![CI](https://github.com/dlski/python-mediator/workflows/CI/badge.svg?event=push)](https://github.com/dlski/python-mediator/actions?query=event%3Apush+branch%3Amaster+workflow%3ACI)
+[![CI](https://github.com/dlski/python-mediator/actions/workflows/ci.yml/badge.svg?branch=master&event=push)](https://github.com/dlski/python-mediator/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/dlski/python-mediator/branch/master/graph/badge.svg?token=AU4T4Z81F6)](https://codecov.io/gh/dlski/python-mediator)
 [![pypi](https://img.shields.io/pypi/v/python-mediator.svg)](https://pypi.python.org/pypi/python-mediator)
 [![downloads](https://img.shields.io/pypi/dm/python-mediator.svg)](https://pypistats.org/packages/python-mediator)
