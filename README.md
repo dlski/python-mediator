@@ -8,7 +8,7 @@
 [![license](https://img.shields.io/github/license/dlski/python-mediator.svg)](https://github.com/dlski/python-mediator/blob/master/LICENSE)
 
 Elastic and extensible asyncio CQRS + ES python microframework.
-Compatible with recent python versions: 3.7, 3.8, 3.9, pypy3.
+Compatible with recent python versions of CPython and pypy3.
 
 Corresponds to clean architecture patterns, ideal for
 command/query segregation scenarios and event-driven design approaches.
@@ -71,7 +71,7 @@ async def main():
     # data query: 1
 
 ```
-More advanced example available in [tests/example/test_request_advanced.py](tests/example/test_request_advanced.py) for reference.
+More advanced example available in [example/test_request_advanced.py](example/test_request_advanced.py) for reference.
 
 ## An event handling example
 ```python
@@ -103,4 +103,4 @@ async def main():
     # first handler: test
     # second handler: test
 ```
-More advanced example available in [tests/example/test_event_advanced.py](tests/example/test_event_advanced.py) for reference.
+More advanced example available in [example/test_event_advanced.py](example/test_event_advanced.py) for reference.

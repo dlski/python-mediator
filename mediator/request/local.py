@@ -17,6 +17,8 @@ from mediator.request.base import RequestExecutor
 
 
 class _RequestExecutorHandlerStore(MapHandlerStore):
+    """"""
+
     _calls: Dict[Hashable, ActionCallType]
 
     def __init__(self):
@@ -44,12 +46,20 @@ class _RequestExecutorHandlerStore(MapHandlerStore):
 
 
 class LocalRequestBus(HandlerRegistry, RequestExecutor):
+    """"""
+
     def __init__(
         self,
         policies: Optional[Sequence[PolicyType]] = None,
         cascade: Optional[HandlerFactoryCascade] = None,
         operators: Sequence[OperatorDef] = (),
     ):
+        """
+
+        :param policies:
+        :param cascade:
+        :param operators:
+        """
         executor_store = _RequestExecutorHandlerStore()
         HandlerRegistry.__init__(
             self,
@@ -61,6 +71,12 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         self._executor = executor_store
 
     async def execute(self, obj: Any, **kwargs):
+        """
+
+        :param obj:
+        :param kwargs:
+        :return:
+        """
         result = await self._executor(ActionSubject(subject=obj, inject=kwargs))
         assert isinstance(
             result, ActionResult

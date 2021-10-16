@@ -18,28 +18,35 @@ from mediator.event.base import EventPublisher, EventSubscriber
 
 
 class _EventSchedulerHandlerStore(CollectionHandlerStore):
+    """"""
+
     _groups: Dict[Hashable, List[ActionCallType]]
 
     def __init__(self, sync_mode: bool = False):
+        """"""
         super().__init__()
         self._groups = defaultdict(list)
         self.sync_mode = sync_mode
 
     def add(self, entry: HandlerEntry):
+        """"""
         super().add(entry)
         self._map_call(entry)
 
     def include(self, entries: Iterable[HandlerEntry]):
+        """"""
         super().include(entries)
         for entry in entries:
             self._map_call(entry)
 
     def _map_call(self, entry: HandlerEntry):
+        """"""
         self._groups[entry.key].append(entry.handler_pipeline())
 
     async def schedule(self, action: ActionSubject):
+        """"""
         key = action.key
-        group: List[ActionCallType] = self._groups.get(key, ())
+        group: Sequence[ActionCallType] = self._groups.get(key, ())
         tasks = [asyncio.create_task(call(action)) for call in group]
         if self.sync_mode:
             await asyncio.wait(tasks)
@@ -53,6 +60,7 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         operators: Sequence[OperatorDef] = (),
         sync_mode: bool = False,
     ):
+        """"""
         scheduler_store = _EventSchedulerHandlerStore(sync_mode=sync_mode)
         HandlerRegistry.__init__(
             self,
@@ -64,4 +72,5 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         self._scheduler = scheduler_store
 
     async def publish(self, obj: Any, **kwargs):
+        """"""
         await self._scheduler.schedule(ActionSubject(subject=obj, inject=kwargs))

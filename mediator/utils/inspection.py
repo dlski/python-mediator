@@ -6,6 +6,8 @@ from typing import Any, List, Optional, get_type_hints
 
 @dataclass
 class CallableArg:
+    """"""
+
     name: str
     type: Optional[Any]
     is_positional: bool
@@ -13,6 +15,8 @@ class CallableArg:
 
 @dataclass
 class CallableType:
+    """"""
+
     is_routine: bool
     is_method: bool
     is_async: bool
@@ -20,6 +24,8 @@ class CallableType:
 
 @dataclass
 class CallableIODetails:
+    """"""
+
     args: List[CallableArg]
     has_kwargs: bool
     return_type: Optional[Any]
@@ -33,10 +39,14 @@ class CallableIODetails:
 
 @dataclass
 class CallableDetails(CallableType, CallableIODetails):
+    """"""
+
     obj: Any
 
 
 class CallableInspector:
+    """"""
+
     _kinds = (
         Parameter.POSITIONAL_ONLY,
         Parameter.POSITIONAL_OR_KEYWORD,
@@ -46,6 +56,11 @@ class CallableInspector:
 
     @classmethod
     def inspect(cls, fn: Any) -> CallableDetails:
+        """
+
+        :param fn:
+        :return:
+        """
         if not callable(fn):
             raise TypeError("Object is not callable")
         type_ = cls.callable_type(fn)
@@ -62,6 +77,11 @@ class CallableInspector:
 
     @staticmethod
     def callable_type(fn: Any) -> CallableType:
+        """
+
+        :param fn:
+        :return:
+        """
         is_routine = inspect.isroutine(fn)
         return CallableType(
             is_routine=is_routine,
@@ -71,6 +91,11 @@ class CallableInspector:
 
     @classmethod
     def io_details(cls, fn: Any) -> CallableIODetails:
+        """
+
+        :param fn:
+        :return:
+        """
         if not inspect.isroutine(fn):
             fn = fn.__call__
         signature = inspect.signature(fn)

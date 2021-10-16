@@ -70,13 +70,15 @@ def _check_inspect_error(error: HandlerFactoryCascadeError):
 
 def _check_incompatible_error(error: HandlerFactoryCascadeError):
     assert isinstance(error, IncompatibleHandlerFactoryCascadeError)
+
     factory_errors = error.factory_errors
     assert len(factory_errors) == 2
-    for (factory, error), factory_type in zip(
+
+    for (factory, factory_error), factory_type in zip(
         factory_errors, [MethodHandlerFactory, CallableHandlerFactory]
     ):
         assert isinstance(factory, factory_type)
-        assert isinstance(error, IncompatibleHandlerFactoryError)
+        assert isinstance(factory_error, IncompatibleHandlerFactoryError)
 
 
 @pytest.mark.parametrize(

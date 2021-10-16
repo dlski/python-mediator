@@ -9,10 +9,14 @@ from mediator.common.factory.policies import CallableHandlerPolicy, MethodHandle
 
 
 class TypeHandlerFactoryMapper(HandlerFactoryMapper):
+    """"""
+
     def __init__(self, mapping: Mapping[Type, Callable[[Any], HandlerFactory]]):
+        """"""
         self._mapping = mapping
 
     def map(self, policy: Any) -> HandlerFactory:
+        """"""
         policy_type = type(policy)
         handler_factory = self._mapping.get(policy_type)
         if handler_factory is None:
@@ -25,6 +29,7 @@ class DefaultHandlerFactoryMapper(TypeHandlerFactoryMapper):
         self,
         extra_mapping: Optional[Mapping[Type, Callable[[Any], HandlerFactory]]] = None,
     ):
+        """"""
         if extra_mapping is None:
             extra_mapping = {}
         super().__init__(
@@ -36,6 +41,7 @@ class DefaultHandlerFactoryMapper(TypeHandlerFactoryMapper):
 
     @classmethod
     def default_mapping(cls):
+        """"""
         return {
             CallableHandlerPolicy: CallableHandlerFactory,
             MethodHandlerPolicy: MethodHandlerFactory,

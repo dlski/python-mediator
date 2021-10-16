@@ -14,20 +14,25 @@ from mediator.common.handler import Handler
 
 
 class HandlerFactoryCascadeError(Exception):
-    pass
+    """"""
 
 
 class ConfigHandlerFactoryCascadeError(ValueError, HandlerFactoryCascadeError):
-    pass
+    """"""
 
 
 class InspectionHandlerFactoryCascadeError(HandlerFactoryCascadeError):
+    """"""
+
     def __init__(self, *args, factory: HandlerFactory):
+        """"""
         super().__init__(*args)
         self.factory = factory
 
 
 class IncompatibleHandlerFactoryCascadeError(HandlerFactoryCascadeError):
+    """"""
+
     def __init__(
         self,
         *args,
@@ -35,16 +40,20 @@ class IncompatibleHandlerFactoryCascadeError(HandlerFactoryCascadeError):
             Tuple[HandlerFactory, IncompatibleHandlerFactoryError]
         ],
     ):
+        """"""
         super().__init__(*args)
         self.factory_errors = factory_errors
 
 
 class HandlerFactoryCascade:
+    """"""
+
     def __init__(
         self,
         policies: Iterable[PolicyType],
         mapper: Optional[HandlerFactoryMapper] = None,
     ):
+        """"""
         policies = [*policies]
         if not policies:
             raise ConfigHandlerFactoryCascadeError("No policies provided")
@@ -54,6 +63,7 @@ class HandlerFactoryCascade:
         self._factories = mapper.map_all(policies)
 
     def __call__(self, obj: Any) -> Handler:
+        """"""
         factory_errors = []
         for factory in self._factories:
             try:
@@ -72,4 +82,5 @@ class HandlerFactoryCascade:
         )
 
     def replace(self, policies: Iterable[PolicyType]):
+        """"""
         return HandlerFactoryCascade(policies=policies, mapper=self._mapper)

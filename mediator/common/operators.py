@@ -4,12 +4,6 @@ from mediator.common.types import ActionCallType
 
 
 class OperatorDef:
-    def __eq__(self, other):
-        raise NotImplementedError
-
-    def __hash__(self):
-        raise TypeError(f"{type(self)} is not hashable")
-
     def create(self, call: ActionCallType, **kwargs) -> ActionCallType:
         raise NotImplementedError
 

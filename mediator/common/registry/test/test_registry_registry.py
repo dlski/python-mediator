@@ -1,4 +1,4 @@
-from typing import Callable, Sequence
+from typing import Callable, List, Sequence
 
 import pytest
 
@@ -12,7 +12,13 @@ from mediator.common.factory import (
 )
 from mediator.common.operators import OperatorDef
 from mediator.common.registry import CollectionHandlerStore, HandlerRegistry
-from tests.common.common import MockupOperatorDef, mockup_action, mockup_handle
+from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.types import ActionSubject
+
+
+def test_handler_registry_config_error():
+    with pytest.raises(TypeError):
+        HandlerRegistry(store=CollectionHandlerStore())
 
 
 class _A:
@@ -24,11 +30,6 @@ class _A:
 # noinspection PyUnusedLocal
 async def _handle(arg: str, **kwargs):
     return arg
-
-
-def test_handler_registry_config_error():
-    with pytest.raises(TypeError):
-        HandlerRegistry(store=CollectionHandlerStore())
 
 
 def _registry_cascade_factory():
@@ -65,6 +66,7 @@ async def test_handler_registry_policy(
     incompatible,
     compatible,
     policies: Sequence[PolicyType],
+    mockup_action_factory: Callable[[], ActionSubject],
 ):
     registry = registry_factory()
 
@@ -79,8 +81,12 @@ async def test_handler_registry_policy(
 
     for entry in registry:
         call = entry.handler_pipeline()
-        result = await call(mockup_action())
+        result = await call(mockup_action_factory())
         assert result.result == "test"
+
+
+async def _return_seq(_: str, seq: List[str]):
+    return seq
 
 
 @pytest.mark.parametrize(
@@ -100,15 +106,16 @@ async def test_handler_operators(
     global_operators: Sequence[OperatorDef],
     local_operators: Sequence[OperatorDef],
     seq: Sequence[str],
+    mockup_action_factory: Callable[[], ActionSubject],
 ):
     registry = HandlerRegistry(
         store=CollectionHandlerStore(),
         policies=[CallableHandlerPolicy()],
         operators=global_operators,
     )
-    registry.register(mockup_handle, operators=local_operators)
-    registry.register(operators=local_operators)(mockup_handle)
+    registry.register(_return_seq, operators=local_operators)
+    registry.register(operators=local_operators)(_return_seq)
     for entry in registry:
         call = entry.handler_pipeline()
-        result = await call(mockup_action())
+        result = await call(mockup_action_factory())
         assert result.result == seq

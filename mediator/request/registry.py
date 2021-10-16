@@ -6,12 +6,15 @@ from mediator.common.registry import HandlerRegistry, MapHandlerStore
 
 
 class RequestHandlerRegistry(HandlerRegistry):
+    """"""
+
     def __init__(
         self,
         policies: Optional[Sequence[PolicyType]] = None,
         cascade: Optional[HandlerFactoryCascade] = None,
         operators: Sequence[OperatorDef] = (),
     ):
+        """"""
         HandlerRegistry.__init__(
             self,
             store=MapHandlerStore(),

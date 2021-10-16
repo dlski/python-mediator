@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Callable, Sequence
 
 import pytest
 
@@ -10,7 +10,9 @@ from mediator.common.registry import (
     MapHandlerStore,
     OperatorHandlerStore,
 )
-from tests.common.common import MockupHandler, MockupOperatorDef, mockup_action
+from mediator.common.registry.test.conftest import MockupHandler
+from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.types import ActionSubject
 
 
 @pytest.fixture
@@ -76,17 +78,19 @@ def test_map_handler_store(
 
 
 @pytest.mark.asyncio
-async def test_operator_handler_store():
+async def test_operator_handler_store(
+    mockup_action_factory: Callable[[], ActionSubject]
+):
     entry_operators = MockupOperatorDef.operators("xyz")
     entry = HandlerEntry(
         handler=MockupHandler(str),
         operators=entry_operators,
     )
-    store_operators = MockupOperatorDef.operators("abc")
 
     nested_store = CollectionHandlerStore()
     assert OperatorHandlerStore.wrap(nested_store, ()) == nested_store
 
+    store_operators = MockupOperatorDef.operators("abc")
     store = OperatorHandlerStore.wrap(nested_store, operators=store_operators)
     assert store != nested_store
     store.add(entry)
@@ -96,5 +100,5 @@ async def test_operator_handler_store():
     for store_entry in store_entries:
         assert store_entry.handler == entry.handler
         call = store_entry.handler_pipeline()
-        result = await call(mockup_action())
+        result = await call(mockup_action_factory())
         assert result.result == ("test", {"seq": list("abcxyz")})

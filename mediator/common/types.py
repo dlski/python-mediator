@@ -9,7 +9,7 @@ class ActionSubject:
 
     @property
     def key(self) -> Hashable:
-        return type(self.subject)
+        return type(self.subject)  # type: ignore
 
 
 @dataclass

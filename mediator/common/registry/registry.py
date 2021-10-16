@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Iterable, Optional, Sequence
+from typing import Any, Iterable, Iterator, Optional, Sequence
 
 from mediator.common.factory.cascade import HandlerFactoryCascade
 from mediator.common.factory.policies import PolicyType
@@ -9,11 +9,14 @@ from mediator.common.registry.stores import OperatorHandlerStore
 
 
 class AbstractHandlerRegistry(HandlerStore):
+    """"""
+
     def __init__(
         self,
         policies: Optional[Sequence[PolicyType]] = None,
         cascade: Optional[HandlerFactoryCascade] = None,
     ):
+        """"""
         self._cascade = self._provide_cascade(policies=policies, cascade=cascade)
 
     @classmethod
@@ -22,6 +25,7 @@ class AbstractHandlerRegistry(HandlerStore):
         policies: Optional[Sequence[PolicyType]],
         cascade: Optional[HandlerFactoryCascade],
     ):
+        """"""
         if cascade is not None:
             return cascade
         if policies is not None:
@@ -35,6 +39,7 @@ class AbstractHandlerRegistry(HandlerStore):
         policies: Optional[Sequence[PolicyType]] = None,
         operators: Sequence[OperatorDef] = (),
     ):
+        """"""
         cascade = self._policies_cascade(policies)
         if obj is None:
             process = functools.partial(
@@ -54,6 +59,7 @@ class AbstractHandlerRegistry(HandlerStore):
     def _policies_cascade(
         self, policies: Optional[Sequence[PolicyType]]
     ) -> HandlerFactoryCascade:
+        """"""
         if policies is None:
             return self._cascade
         else:
@@ -66,20 +72,26 @@ class AbstractHandlerRegistry(HandlerStore):
         cascade: HandlerFactoryCascade,
         operators: Sequence[OperatorDef],
     ):
+        """"""
         handler = cascade(obj)
         self.add(HandlerEntry(handler=handler, operators=operators))
 
     def add(self, entry: HandlerEntry):
+        """"""
         raise NotImplementedError
 
     def include(self, entries: Iterable[HandlerEntry]):
+        """"""
         raise NotImplementedError
 
-    def __iter__(self) -> Iterable[HandlerEntry]:
+    def __iter__(self) -> Iterator[HandlerEntry]:
+        """"""
         raise NotImplementedError
 
 
 class HandlerRegistry(AbstractHandlerRegistry):
+    """"""
+
     def __init__(
         self,
         store: HandlerStore,
@@ -87,14 +99,18 @@ class HandlerRegistry(AbstractHandlerRegistry):
         cascade: Optional[HandlerFactoryCascade] = None,
         operators: Sequence[OperatorDef] = (),
     ):
+        """"""
         AbstractHandlerRegistry.__init__(self, policies=policies, cascade=cascade)
         self._store = OperatorHandlerStore.wrap(nested=store, operators=operators)
 
     def add(self, entry: HandlerEntry):
+        """"""
         self._store.add(entry)
 
     def include(self, entries: Iterable[HandlerEntry]):
+        """"""
         self._store.include(entries)
 
-    def __iter__(self) -> Iterable[HandlerEntry]:
+    def __iter__(self) -> Iterator[HandlerEntry]:
+        """"""
         return iter(self._store)
