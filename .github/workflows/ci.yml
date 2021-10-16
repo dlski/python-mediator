@@ -31,7 +31,7 @@ jobs:
       #----------------------------------------------
       #          install and run linters
       #----------------------------------------------
-      - run: python -m pip install black flake8 isort mypy
+      - run: python -m pip install black flake8 isort mypy pytest
       - run: |
           flake8 mediator/ example/
           black mediator/ example/ --check
