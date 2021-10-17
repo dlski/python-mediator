@@ -4,7 +4,7 @@ import pytest
 
 from mediator.common.registry import HandlerEntry
 from mediator.common.registry.test.conftest import MockupHandler
-from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.test.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionResult, ActionSubject
 
 
@@ -19,7 +19,7 @@ async def test_handler_entry(mockup_action_factory: Callable[[], ActionSubject])
     overall_seq = extended_seq + standard_seq
     entry = HandlerEntry(
         handler=MockupHandler(str),
-        operators=MockupOperatorDef.operators(standard_seq),
+        modifiers=MockupModifierFactory.modifiers(standard_seq),
     )
     assert entry.key is str
 
@@ -31,11 +31,13 @@ async def test_handler_entry(mockup_action_factory: Callable[[], ActionSubject])
     result = await call(mockup_action_factory())
     assert result.result == standard_seq
 
-    extended_entry = entry.stack(operators=MockupOperatorDef.operators(extended_seq))
+    extended_entry = entry.stack(
+        modifiers=MockupModifierFactory.modifiers(extended_seq)
+    )
     assert extended_entry.handler == entry.handler
-    for operator, seq_item in zip(extended_entry.operators, overall_seq):
-        assert isinstance(operator, MockupOperatorDef)
-        assert operator.seq_item == seq_item
+    for modifier, seq_item in zip(extended_entry.modifiers, overall_seq):
+        assert isinstance(modifier, MockupModifierFactory)
+        assert modifier.seq_item == seq_item
     call = extended_entry.pipeline(_return_seq)
     result = await call(mockup_action_factory())
     assert result.result == overall_seq

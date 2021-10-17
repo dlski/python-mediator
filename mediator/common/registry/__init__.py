@@ -6,11 +6,11 @@ from mediator.common.registry.base import (
     InspectionHandlerStoreError,
     LookupHandlerStoreError,
 )
-from mediator.common.registry.registry import AbstractHandlerRegistry, HandlerRegistry
+from mediator.common.registry.registry import HandlerRegistry
 from mediator.common.registry.stores import (
     CollectionHandlerStore,
-    MapHandlerStore,
-    OperatorHandlerStore,
+    MappingHandlerStore,
+    ModifierHandlerStore,
 )
 
 __all__ = [
@@ -22,10 +22,9 @@ __all__ = [
     "InspectionHandlerStoreError",
     "LookupHandlerStoreError",
     # registry
-    "AbstractHandlerRegistry",
     "HandlerRegistry",
     # stores
     "CollectionHandlerStore",
-    "MapHandlerStore",
-    "OperatorHandlerStore",
+    "MappingHandlerStore",
+    "ModifierHandlerStore",
 ]

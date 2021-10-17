@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dlski/python-mediator/branch/master/graph/badge.svg?token=AU4T4Z81F6)](https://codecov.io/gh/dlski/python-mediator)
 [![pypi](https://img.shields.io/pypi/v/python-mediator.svg)](https://pypi.python.org/pypi/python-mediator)
 [![downloads](https://img.shields.io/pypi/dm/python-mediator.svg)](https://pypistats.org/packages/python-mediator)
-[![versions](https://img.shields.io/pypi/pyversions/python-mediator.svg)](https://github.com/dlski/python-mediator)
+[![versions](https://img.shields.io/pypi/pyversions/python-mediator.svg)](https://pypi.python.org/pypi/python-mediator)
 [![license](https://img.shields.io/github/license/dlski/python-mediator.svg)](https://github.com/dlski/python-mediator/blob/master/LICENSE)
 
 Elastic and extensible asyncio CQRS + ES python microframework.
@@ -15,7 +15,7 @@ command/query segregation scenarios and event-driven design approaches.
 No external dependencies - uses only standard libraries.
 
 Key features:
-- automatic function or method handler inspection -
+- automatic function and method handler inspection -
   proper action (command/query/event) to handler matching is fully automatic
   and based on python type hints (annotations) by default
 - configurable middleware (operator) stack -

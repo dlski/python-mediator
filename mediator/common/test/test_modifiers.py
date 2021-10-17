@@ -2,11 +2,11 @@ from typing import Collection
 
 import pytest
 
-from mediator.common.operators import OperatorDef, OperatorStack
+from mediator.common.modifiers import ModifierFactory, ModifierStack
 from mediator.common.types import ActionCallType, ActionResult, ActionSubject
 
 
-class MockupOperatorDef(OperatorDef):
+class MockupModifierFactory(ModifierFactory):
     def __init__(self, seq_item: str):
         self.seq_item = seq_item
 
@@ -23,7 +23,7 @@ class MockupOperatorDef(OperatorDef):
         return _op
 
     @classmethod
-    def operators(cls, seq: Collection[str]):
+    def modifiers(cls, seq: Collection[str]):
         return [cls(seq_item) for seq_item in seq]
 
 
@@ -37,9 +37,9 @@ async def _get_seq_call(action: ActionSubject):
 
 
 @pytest.mark.asyncio
-async def test_operator_stack(action: ActionSubject):
+async def test_modifier_stack(action: ActionSubject):
     letters = ["x", "y", "z"]
-    operators = MockupOperatorDef.operators(letters)
-    call = OperatorStack.build(operators, _get_seq_call)
+    modifiers = MockupModifierFactory.modifiers(letters)
+    call = ModifierStack.build(modifiers, _get_seq_call)
     result = await call(action)
     assert result.result == letters

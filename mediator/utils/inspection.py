@@ -6,31 +6,52 @@ from typing import Any, List, Optional, get_type_hints
 
 @dataclass
 class CallableArg:
-    """"""
+    """
+    Stores information about given callable argument.
+    """
 
+    # argument name
     name: str
+    # argument type annotation
     type: Optional[Any]
+    # argument is positional flag
     is_positional: bool
 
 
 @dataclass
 class CallableType:
-    """"""
+    """
+    Stores information about callable type.
+    """
 
+    # when True callable is a routine
     is_routine: bool
+    # when True callable is a method
     is_method: bool
+    # when True callable returns awaitable result
     is_async: bool
 
 
 @dataclass
 class CallableIODetails:
-    """"""
+    """
+    Stores all information about input arguments and output data type.
+    """
 
+    # list of callable arguments details
     args: List[CallableArg]
+    # when True callable accepts variadic keyword args like **kwargs
     has_kwargs: bool
+    # return type annotation
     return_type: Optional[Any]
 
     def arg_by_name(self, name: str) -> Optional[CallableArg]:
+        """
+        Returns callable argument details with matching name,
+        or None when there is no match.
+        :param name: argument name
+        :return: callable argument details or None when not found
+        """
         for arg in self.args:
             if arg.name == name:
                 return arg
@@ -39,13 +60,18 @@ class CallableIODetails:
 
 @dataclass
 class CallableDetails(CallableType, CallableIODetails):
-    """"""
+    """
+    Stores all inspection data about callable.
+    """
 
+    # reference to inspected object
     obj: Any
 
 
 class CallableInspector:
-    """"""
+    """
+    Raw callable object inspector. Provides raw callable details is structured form.
+    """
 
     _kinds = (
         Parameter.POSITIONAL_ONLY,
@@ -57,9 +83,9 @@ class CallableInspector:
     @classmethod
     def inspect(cls, fn: Any) -> CallableDetails:
         """
-
-        :param fn:
-        :return:
+        Inspects given callable object.
+        :param fn: raw callable object to inspect
+        :return: callable structured details
         """
         if not callable(fn):
             raise TypeError("Object is not callable")
@@ -78,9 +104,9 @@ class CallableInspector:
     @staticmethod
     def callable_type(fn: Any) -> CallableType:
         """
-
-        :param fn:
-        :return:
+        Inspects and provides given callable type information.
+        :param fn: raw callable to inspect
+        :return: callable type structured information
         """
         is_routine = inspect.isroutine(fn)
         return CallableType(
@@ -92,9 +118,9 @@ class CallableInspector:
     @classmethod
     def io_details(cls, fn: Any) -> CallableIODetails:
         """
-
-        :param fn:
-        :return:
+        Inspects and provides given callable input and output details.
+        :param fn: raw callable to inspect
+        :return: callable input and output structured details
         """
         if not inspect.isroutine(fn):
             fn = fn.__call__

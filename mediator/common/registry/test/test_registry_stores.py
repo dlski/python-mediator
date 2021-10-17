@@ -7,11 +7,11 @@ from mediator.common.registry import (
     CollisionHandlerStoreError,
     HandlerEntry,
     LookupHandlerStoreError,
-    MapHandlerStore,
-    OperatorHandlerStore,
+    MappingHandlerStore,
+    ModifierHandlerStore,
 )
 from mediator.common.registry.test.conftest import MockupHandler
-from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.test.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionSubject
 
 
@@ -55,12 +55,12 @@ def test_collection_handler_store(
     assert {e.handler for e in all_entries} == {e.handler for e in store}
 
 
-def test_map_handler_store(
+def test_mapping_handler_store(
     first_part: Sequence[HandlerEntry],
     second_part: Sequence[HandlerEntry],
     all_entries: Sequence[HandlerEntry],
 ):
-    store = MapHandlerStore()
+    store = MappingHandlerStore()
     for entry in first_part:
         store.add(entry)
     store.include(second_part)
@@ -78,20 +78,20 @@ def test_map_handler_store(
 
 
 @pytest.mark.asyncio
-async def test_operator_handler_store(
+async def test_modifier_handler_store(
     mockup_action_factory: Callable[[], ActionSubject]
 ):
-    entry_operators = MockupOperatorDef.operators("xyz")
+    entry_modifiers = MockupModifierFactory.modifiers("xyz")
     entry = HandlerEntry(
         handler=MockupHandler(str),
-        operators=entry_operators,
+        modifiers=entry_modifiers,
     )
 
     nested_store = CollectionHandlerStore()
-    assert OperatorHandlerStore.wrap(nested_store, ()) == nested_store
+    assert ModifierHandlerStore.wrap(nested_store, ()) == nested_store
 
-    store_operators = MockupOperatorDef.operators("abc")
-    store = OperatorHandlerStore.wrap(nested_store, operators=store_operators)
+    store_modifiers = MockupModifierFactory.modifiers("abc")
+    store = ModifierHandlerStore.wrap(nested_store, modifiers=store_modifiers)
     assert store != nested_store
     store.add(entry)
     store.include([entry])

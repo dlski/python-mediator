@@ -9,10 +9,18 @@ from mediator.utils.inspection import CallableArg, CallableDetails, CallableInsp
 
 
 class CallableObjDetails:
-    """"""
+    """
+    Utility that wraps callable object inspection procedure into handler factory world.
+    """
 
     def __call__(self, obj: Any) -> CallableDetails:
-        """"""
+        """
+        Provides callable object inspection result
+        or raises an error when obj is not callable.
+        :param obj: callable object to inspect
+        :raises IncompatibleHandlerFactoryError: when obj is not valid callable
+        :return: `CallableDetails` object
+        """
         try:
             return CallableInspector.inspect(obj)
         except TypeError as e:
@@ -20,18 +28,39 @@ class CallableObjDetails:
 
 
 class CallableAttributeDetails:
-    """"""
+    """
+    Utility that (optionally) checks if object has valid type
+    and performs callable inspection for given object attribute.
+    """
 
     name: str
     subtype_of: Tuple[Any, ...]
 
     def __init__(self, name: str, owner_subtype_of: Sequence[Any] = ()):
-        """"""
+        """
+        Initializes callable attribute inspection object,
+        that (optionally) checks if object has valid type
+        and performs callable inspection for given object attribute
+        :param name: inspection object attribute name
+        :param owner_subtype_of: sequence of types to check
+        if an instance of an input object is one of them;
+        just like `isinstance(obj, owner_subtype_of)`
+        """
         self.name = name
         self.subtype_of = tuple(owner_subtype_of)
 
     def __call__(self, obj: Any) -> CallableDetails:
-        """"""
+        """
+        (Optionally) checks if object has valid type
+        and performs callable inspection for given object attribute.
+        :param obj: input object
+        :raises IncompatibleHandlerFactoryError: when object type is not supported
+        :raises IncompatibleHandlerFactoryError:
+        when object has no attribute with expected name
+        :raises IncompatibleHandlerFactoryError:
+        when expected attribute is not callable
+        :return: callable object attribute `CallableDetails` result
+        """
         if self.subtype_of:
             if not isinstance(obj, self.subtype_of):
                 raise IncompatibleHandlerFactoryError(
@@ -52,14 +81,31 @@ class CallableAttributeDetails:
 
 
 class HandlerSubjectArgGet:
-    """"""
+    """
+    Utility that finds primary argument for given callable object,
+    to be filled with action subject (event, request, command etc object).
+    """
 
     def __init__(self, name: Optional[str] = None):
-        """"""
+        """
+        Initializes utility that finds primary argument for given callable object.
+        :param name: optional argument name hint;
+        when provided utility will assume argument with that name as primary
+        """
         self.name = name
 
     def __call__(self, details: CallableDetails) -> CallableArg:
-        """"""
+        """
+        Provides callable primary argument using `CallableDetails` object.
+        :param details: callable details to use
+        :raises IncompatibleHandlerFactoryError: when callable has no arguments
+        :raises IncompatibleHandlerFactoryError: when argument name was specified,
+        but no matching argument was found
+        :raises IncompatibleHandlerFactoryError: when argument has no or invalid type
+        :raises HandlerFactoryError:
+        when for found primary argument cannot be determined unequivocal type
+        :return: primary argument details
+        """
         if not details.args:
             raise IncompatibleHandlerFactoryError(
                 f"Callable {details.obj!r} has no explicit argument"
@@ -69,7 +115,14 @@ class HandlerSubjectArgGet:
         return arg
 
     def _find(self, details: CallableDetails) -> CallableArg:
-        """"""
+        """
+        Finds primary callable argument using given details
+        :param details: callable details
+        :raises IncompatibleHandlerFactoryError: when callable has no arguments
+        :raises IncompatibleHandlerFactoryError: when argument name was specified,
+        but no matching argument was found
+        :return: primary argument details
+        """
         if self.name:
             return self._find_by_name(details, self.name)
         else:
@@ -77,7 +130,13 @@ class HandlerSubjectArgGet:
 
     @staticmethod
     def _find_by_name(details: CallableDetails, name: str):
-        """"""
+        """
+        Tries to find primary argument by name using given callable details.
+        :param details: callable details
+        :param name: argument name
+        :raises IncompatibleHandlerFactoryError: when no matching argument was found
+        :return: primary argument details
+        """
         arg = details.arg_by_name(name)
         if not arg:
             raise IncompatibleHandlerFactoryError(
@@ -87,12 +146,22 @@ class HandlerSubjectArgGet:
 
     @staticmethod
     def _get_first(details: CallableDetails) -> CallableArg:
-        """"""
+        """
+        Returns first callable argument as primary
+        :param details: callable details
+        :return: primary argument details
+        """
         return details.args[0]
 
     @staticmethod
     def _check_type(details: CallableDetails, arg: CallableArg):
-        """"""
+        """
+        Checks given primary argument candidate is a valid one
+        :param details: callable details
+        :param arg: primary argument candidate details
+        :raises HandlerFactoryError:
+        when for given primary argument cannot be determined unequivocal type
+        """
         if arg.type is None:
             raise HandlerFactoryError(
                 f"Callable {details.obj!r} argument {arg.name} has no type annotation"
@@ -105,18 +174,37 @@ class HandlerSubjectArgGet:
 
 
 class CallableHandlerCreate:
-    """"""
+    """
+    Creates callable handler using given specification.
+    """
 
     def __init__(
         self, subject_as_keyword: bool, arg_map: Dict[str, str], arg_strict: bool
     ):
-        """"""
+        """
+        Initializes callable handler factory using given specification.
+        :param subject_as_keyword:
+        force to provide primary (subject) argument as keyword argument
+        :param arg_map: action extra arguments to callable arguments name mapping;
+        used for translation to reconcile argument name differences
+        :param arg_strict: when True all action arguments will be provided for handler,
+        when False only those that fits into handler callable arguments set
+        (excessive ones will be dropped)
+        """
         self.subject_as_keyword = subject_as_keyword
         self.arg_map = arg_map
         self.arg_strict = arg_strict
 
     def __call__(self, details: CallableDetails, arg: CallableArg, obj: Any) -> Handler:
-        """"""
+        """
+        Creates callable handler using given specification and configuration.
+        :param details: callable details
+        :param arg: primary (subject) argument specification
+        :param obj: underlying object
+        - source of callable object and handler behaviour information object
+        :raises HandlerFactoryError: when callable object is not async callable
+        :return: handler object that can call underlying callable using provided action
+        """
         if not details.is_async:
             raise HandlerFactoryError(f"Object {details.obj!r} is not async callable")
 

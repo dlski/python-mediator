@@ -10,9 +10,9 @@ from mediator.common.factory import (
     MethodHandlerPolicy,
     PolicyType,
 )
-from mediator.common.operators import OperatorDef
+from mediator.common.modifiers import ModifierFactory
 from mediator.common.registry import CollectionHandlerStore, HandlerRegistry
-from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.test.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionSubject
 
 
@@ -90,31 +90,31 @@ async def _return_seq(_: str, seq: List[str]):
 
 
 @pytest.mark.parametrize(
-    "global_operators, local_operators, seq",
+    "global_modifiers, local_modifiers, seq",
     [
-        (MockupOperatorDef.operators("abc"), (), list("abc")),
-        ((), MockupOperatorDef.operators("xyz"), list("xyz")),
+        (MockupModifierFactory.modifiers("abc"), (), list("abc")),
+        ((), MockupModifierFactory.modifiers("xyz"), list("xyz")),
         (
-            MockupOperatorDef.operators("abc"),
-            MockupOperatorDef.operators("xyz"),
+            MockupModifierFactory.modifiers("abc"),
+            MockupModifierFactory.modifiers("xyz"),
             list("abcxyz"),
         ),
     ],
 )
 @pytest.mark.asyncio
-async def test_handler_operators(
-    global_operators: Sequence[OperatorDef],
-    local_operators: Sequence[OperatorDef],
+async def test_handler_modifiers(
+    global_modifiers: Sequence[ModifierFactory],
+    local_modifiers: Sequence[ModifierFactory],
     seq: Sequence[str],
     mockup_action_factory: Callable[[], ActionSubject],
 ):
     registry = HandlerRegistry(
         store=CollectionHandlerStore(),
         policies=[CallableHandlerPolicy()],
-        operators=global_operators,
+        modifiers=global_modifiers,
     )
-    registry.register(_return_seq, operators=local_operators)
-    registry.register(operators=local_operators)(_return_seq)
+    registry.register(_return_seq, modifiers=local_modifiers)
+    registry.register(modifiers=local_modifiers)(_return_seq)
     for entry in registry:
         call = entry.handler_pipeline()
         result = await call(mockup_action_factory())

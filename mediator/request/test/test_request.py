@@ -4,7 +4,7 @@ import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
-from mediator.common.test.test_operators import MockupOperatorDef
+from mediator.common.test.test_modifiers import MockupModifierFactory
 from mediator.request import LocalRequestBus, RequestHandlerRegistry
 
 
@@ -30,12 +30,12 @@ async def _handle_b(b: _RequestB, seq: List[str]):
 async def test_local_request_executor():
     policies = [CallableHandlerPolicy()]
     executor = LocalRequestBus(
-        policies=policies, operators=MockupOperatorDef.operators("abc")
+        policies=policies, modifiers=MockupModifierFactory.modifiers("abc")
     )
     executor.register(_handle_a)
 
     registry = RequestHandlerRegistry(
-        policies=policies, operators=MockupOperatorDef.operators("xyz")
+        policies=policies, modifiers=MockupModifierFactory.modifiers("xyz")
     )
     registry.register(_handle_b)
     executor.include(registry)
