@@ -4,25 +4,25 @@ import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
+from mediator.common.test.test_modifiers import MockupModifierFactory
 from mediator.request import LocalRequestBus, RequestHandlerRegistry
-from tests.common.common import MockupOperatorDef
 
 
-class _MockupRequestA:
+class _RequestA:
     pass
 
 
-class _MockupRequestB:
+class _RequestB:
     pass
 
 
 # noinspection PyUnusedLocal
-async def _handle_a(a: _MockupRequestA, seq: List[str]):
+async def _handle_a(a: _RequestA, seq: List[str]):
     return seq
 
 
 # noinspection PyUnusedLocal
-async def _handle_b(b: _MockupRequestB, seq: List[str]):
+async def _handle_b(b: _RequestB, seq: List[str]):
     return seq
 
 
@@ -30,19 +30,19 @@ async def _handle_b(b: _MockupRequestB, seq: List[str]):
 async def test_local_request_executor():
     policies = [CallableHandlerPolicy()]
     executor = LocalRequestBus(
-        policies=policies, operators=MockupOperatorDef.operators("abc")
+        policies=policies, modifiers=MockupModifierFactory.modifiers("abc")
     )
     executor.register(_handle_a)
 
     registry = RequestHandlerRegistry(
-        policies=policies, operators=MockupOperatorDef.operators("xyz")
+        policies=policies, modifiers=MockupModifierFactory.modifiers("xyz")
     )
     registry.register(_handle_b)
     executor.include(registry)
 
     for rq, expected_seq in [
-        (_MockupRequestA(), list("abc")),
-        (_MockupRequestB(), list("abcxyz")),
+        (_RequestA(), list("abc")),
+        (_RequestB(), list("abcxyz")),
     ]:
         result_seq = await executor.execute(rq, seq=[])
         assert result_seq == expected_seq

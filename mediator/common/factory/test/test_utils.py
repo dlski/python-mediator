@@ -5,8 +5,8 @@ import pytest
 from mediator.common.factory import HandlerFactoryError, IncompatibleHandlerFactoryError
 from mediator.common.factory.utils import (
     CallableAttributeDetails,
+    CallableHandlerCreate,
     CallableObjDetails,
-    DirectHandlerCreate,
     HandlerSubjectArgGet,
 )
 from mediator.common.types import ActionResult, ActionSubject
@@ -166,7 +166,7 @@ async def test_direct_handler_create_successful(
 ):
     get_details = CallableObjDetails()
     arg_get = HandlerSubjectArgGet(name=name)
-    handler_create = DirectHandlerCreate(
+    handler_create = CallableHandlerCreate(
         subject_as_keyword=name is not None,
         arg_map=arg_map,
         arg_strict=True,
@@ -191,7 +191,7 @@ async def test_direct_handler_create_successful(
 def test_direct_handler_create_fail(obj, error, error_message):
     get_details = CallableObjDetails()
     arg_get = HandlerSubjectArgGet(name="arg")
-    handler_create = DirectHandlerCreate(
+    handler_create = CallableHandlerCreate(
         subject_as_keyword=False, arg_map={}, arg_strict=True
     )
 
