@@ -27,26 +27,21 @@ from mediator.common.factory.policies import (
 )
 
 __all__ = [
-    # base
-    "HandlerFactory",
-    "HandlerFactoryError",
-    "HandlerFactoryMapper",
-    "IncompatibleHandlerFactoryError",
-    # cascade
+    "CallableHandlerFactory",
+    "CallableHandlerPolicy",
     "ConfigHandlerFactoryCascadeError",
+    "DefaultHandlerFactoryMapper",
+    "HandlerFactory",
     "HandlerFactoryCascade",
     "HandlerFactoryCascadeError",
+    "HandlerFactoryError",
+    "HandlerFactoryMapper",
     "IncompatibleHandlerFactoryCascadeError",
+    "IncompatibleHandlerFactoryError",
     "InspectionHandlerFactoryCascadeError",
-    # factories
-    "CallableHandlerFactory",
-    "MethodHandlerFactory",
-    # mappers
-    "DefaultHandlerFactoryMapper",
-    "TypeHandlerFactoryMapper",
-    # policy
-    "CallableHandlerPolicy",
     "MappablePolicy",
+    "MethodHandlerFactory",
     "MethodHandlerPolicy",
     "PolicyType",
+    "TypeHandlerFactoryMapper",
 ]

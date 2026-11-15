@@ -1,4 +1,5 @@
-from typing import Any, Callable, Hashable, Type
+from collections.abc import Callable, Hashable
+from typing import Any
 
 import pytest
 
@@ -7,7 +8,7 @@ from mediator.common.types import ActionResult, ActionSubject
 
 
 class MockupHandler(Handler):
-    def __init__(self, type_: Type):
+    def __init__(self, type_: type):
         self.type_ = type_
 
     @property

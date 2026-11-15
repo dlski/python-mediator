@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Any
 
 from mediator.common.factory.base import (
     HandlerFactoryError,
@@ -24,7 +25,7 @@ class CallableObjDetails:
         try:
             return CallableInspector.inspect(obj)
         except TypeError as e:
-            raise IncompatibleHandlerFactoryError(f"{obj!r}: {e}")
+            raise IncompatibleHandlerFactoryError(f"{obj!r}: {e}") from e
 
 
 class CallableAttributeDetails:
@@ -34,7 +35,7 @@ class CallableAttributeDetails:
     """
 
     name: str
-    subtype_of: Tuple[Any, ...]
+    subtype_of: tuple[Any, ...]
 
     def __init__(self, name: str, owner_subtype_of: Sequence[Any] = ()):
         """
@@ -61,23 +62,24 @@ class CallableAttributeDetails:
         when expected attribute is not callable
         :return: callable object attribute `CallableDetails` result
         """
-        if self.subtype_of:
-            if not isinstance(obj, self.subtype_of):
-                raise IncompatibleHandlerFactoryError(
-                    f"Object {obj!r} is not type of {self.subtype_of}"
-                )
+        if self.subtype_of and not isinstance(obj, self.subtype_of):
+            raise IncompatibleHandlerFactoryError(
+                f"Object {obj!r} is not type of {self.subtype_of}"
+            )
 
         try:
             attr = getattr(obj, self.name)
         except AttributeError:
             raise IncompatibleHandlerFactoryError(
                 f"Object {obj!r} has no attribute named {self.name}"
-            )
+            ) from None
 
         try:
             return CallableInspector.inspect(attr)
         except TypeError as e:
-            raise IncompatibleHandlerFactoryError(f"{obj!r} attribute {self.name}: {e}")
+            raise IncompatibleHandlerFactoryError(
+                f"{obj!r} attribute {self.name}: {e}"
+            ) from e
 
 
 class HandlerSubjectArgGet:
@@ -86,7 +88,7 @@ class HandlerSubjectArgGet:
     to be filled with action subject (event, request, command etc object).
     """
 
-    def __init__(self, name: Optional[str] = None):
+    def __init__(self, name: str | None = None):
         """
         Initializes utility that finds primary argument for given callable object.
         :param name: optional argument name hint;
@@ -179,7 +181,7 @@ class CallableHandlerCreate:
     """
 
     def __init__(
-        self, subject_as_keyword: bool, arg_map: Dict[str, str], arg_strict: bool
+        self, subject_as_keyword: bool, arg_map: dict[str, str], arg_strict: bool
     ):
         """
         Initializes callable handler factory using given specification.
@@ -208,7 +210,7 @@ class CallableHandlerCreate:
         if not details.is_async:
             raise HandlerFactoryError(f"Object {details.obj!r} is not async callable")
 
-        subject_name: Optional[str]
+        subject_name: str | None
         if self.subject_as_keyword or not arg.is_positional:
             subject_name = arg.name
         else:

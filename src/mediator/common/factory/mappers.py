@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, Mapping, Optional, Type
+from collections.abc import Callable, Mapping
+from typing import Any
 
 from mediator.common.factory.base import HandlerFactory, HandlerFactoryMapper
 from mediator.common.factory.factories import (
@@ -16,7 +17,7 @@ class TypeHandlerFactoryMapper(HandlerFactoryMapper):
     using policy type to handler factory provider mapping.
     """
 
-    def __init__(self, mapping: Mapping[Type[Any], Callable[[Any], HandlerFactory]]):
+    def __init__(self, mapping: Mapping[type[Any], Callable[[Any], HandlerFactory]]):
         """
         Initializes type handler factory mapper.
         :param mapping: policy type to handler factory provider mapping
@@ -48,9 +49,8 @@ class DefaultHandlerFactoryMapper(TypeHandlerFactoryMapper):
 
     def __init__(
         self,
-        extra_mapping: Optional[
-            Mapping[Type[Any], Callable[[Any], HandlerFactory]]
-        ] = None,
+        extra_mapping: Mapping[type[Any], Callable[[Any], HandlerFactory]]
+        | None = None,
     ):
         """
         Initializes library default handler factory mapper.
@@ -68,7 +68,7 @@ class DefaultHandlerFactoryMapper(TypeHandlerFactoryMapper):
         )
 
     @classmethod
-    def default_mapping(cls) -> Dict[Type[Any], Type[HandlerFactory]]:
+    def default_mapping(cls) -> dict[type[Any], type[HandlerFactory]]:
         """
         Provides library default policy type to handler factory provider mapping.
         :return: default policy type to handler factory provider mapping

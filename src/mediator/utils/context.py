@@ -1,4 +1,4 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -8,7 +8,7 @@ class AsyncNullContextManager(Generic[T]):
     Asyncio null context manager - zero functionality context manager.
     """
 
-    def __init__(self, return_value: Optional[T] = None):
+    def __init__(self, return_value: T | None = None):
         """
         Initializes asyncio null context manager.
         :param return_value: optional value returned in `when` statement

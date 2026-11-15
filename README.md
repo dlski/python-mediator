@@ -72,7 +72,6 @@ async def main():
     # -- output --
     # print message: test
     # data query: 1
-
 ```
 More advanced example available in [example/test_request_advanced.py](example/test_request_advanced.py) for reference.
 

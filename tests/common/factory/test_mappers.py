@@ -10,7 +10,7 @@ from mediator.common.factory import (
 
 
 @pytest.mark.parametrize(
-    "policy, factory_type",
+    ("policy", "factory_type"),
     [
         (CallableHandlerPolicy(), CallableHandlerFactory),
         (MethodHandlerPolicy(name="method"), MethodHandlerFactory),

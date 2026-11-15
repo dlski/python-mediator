@@ -1,11 +1,11 @@
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 
 from mediator.common.registry import HandlerEntry
+from mediator.common.types import ActionResult, ActionSubject
 from tests.common.registry.conftest import MockupHandler
 from tests.common.test_modifiers import MockupModifierFactory
-from mediator.common.types import ActionResult, ActionSubject
 
 
 async def _return_seq(subject: ActionSubject) -> ActionResult:
@@ -35,7 +35,7 @@ async def test_handler_entry(mockup_action_factory: Callable[[], ActionSubject])
         modifiers=MockupModifierFactory.modifiers(extended_seq)
     )
     assert extended_entry.handler == entry.handler
-    for modifier, seq_item in zip(extended_entry.modifiers, overall_seq):
+    for modifier, seq_item in zip(extended_entry.modifiers, overall_seq, strict=False):
         assert isinstance(modifier, MockupModifierFactory)
         assert modifier.seq_item == seq_item
     call = extended_entry.pipeline(_return_seq)

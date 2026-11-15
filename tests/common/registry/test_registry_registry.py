@@ -1,4 +1,4 @@
-from typing import Callable, List, Sequence
+from collections.abc import Callable, Sequence
 
 import pytest
 
@@ -12,8 +12,8 @@ from mediator.common.factory import (
 )
 from mediator.common.modifiers import ModifierFactory
 from mediator.common.registry import CollectionHandlerStore, HandlerRegistry
-from tests.common.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionSubject
+from tests.common.test_modifiers import MockupModifierFactory
 
 
 def test_handler_registry_config_error():
@@ -54,7 +54,7 @@ def _registry_policies_factory():
     [_registry_cascade_factory, _registry_policies_factory],
 )
 @pytest.mark.parametrize(
-    "policies, incompatible, compatible",
+    ("policies", "incompatible", "compatible"),
     [
         (None, _A(), _handle),
         ([MethodHandlerPolicy(name="handle")], _handle, _A()),
@@ -85,12 +85,12 @@ async def test_handler_registry_policy(
         assert result.result == "test"
 
 
-async def _return_seq(_: str, seq: List[str]):
+async def _return_seq(_: str, seq: list[str]):
     return seq
 
 
 @pytest.mark.parametrize(
-    "global_modifiers, local_modifiers, seq",
+    ("global_modifiers", "local_modifiers", "seq"),
     [
         (MockupModifierFactory.modifiers("abc"), (), list("abc")),
         ((), MockupModifierFactory.modifiers("xyz"), list("xyz")),

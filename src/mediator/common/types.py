@@ -1,5 +1,6 @@
+from collections.abc import Awaitable, Callable, Hashable
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, Hashable
+from typing import Any
 
 
 @dataclass
@@ -10,7 +11,7 @@ class ActionSubject:
     """
 
     subject: Any
-    inject: Dict[str, Any]
+    inject: dict[str, Any]
 
     @property
     def key(self) -> Hashable:

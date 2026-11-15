@@ -34,7 +34,7 @@ async def _check_handler(handler: Handler):
 
 
 @pytest.mark.parametrize(
-    "obj, policy",
+    ("obj", "policy"),
     [
         (_A().a, CallableHandlerPolicy(arg_strict=True)),
         (_A().b, CallableHandlerPolicy(arg_map={"x": "a", "y": "b"}, arg_strict=True)),
@@ -49,7 +49,7 @@ async def test_callable_handler_factory(obj, policy: CallableHandlerPolicy):
 
 
 @pytest.mark.parametrize(
-    "obj, policy",
+    ("obj", "policy"),
     [
         (_A(), MethodHandlerPolicy(name="a")),
         (

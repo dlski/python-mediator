@@ -1,11 +1,9 @@
-from typing import List
-
 import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
-from tests.common.test_modifiers import MockupModifierFactory
 from mediator.request import LocalRequestBus, RequestHandlerRegistry
+from tests.common.test_modifiers import MockupModifierFactory
 
 
 class _RequestA:
@@ -17,12 +15,12 @@ class _RequestB:
 
 
 # noinspection PyUnusedLocal
-async def _handle_a(a: _RequestA, seq: List[str]):
+async def _handle_a(a: _RequestA, seq: list[str]):
     return seq
 
 
 # noinspection PyUnusedLocal
-async def _handle_b(b: _RequestB, seq: List[str]):
+async def _handle_b(b: _RequestB, seq: list[str]):
     return seq
 
 

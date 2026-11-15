@@ -1,4 +1,4 @@
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
 
 import pytest
 
@@ -10,9 +10,9 @@ from mediator.common.registry import (
     MappingHandlerStore,
     ModifierHandlerStore,
 )
+from mediator.common.types import ActionSubject
 from tests.common.registry.conftest import MockupHandler
 from tests.common.test_modifiers import MockupModifierFactory
-from mediator.common.types import ActionSubject
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def test_mapping_handler_store(
         store.add(first_part[0])
 
     found = store.get(int)
-    assert found.key == int
+    assert found.key is int
     assert found.handler == first_part[1].handler
 
     with pytest.raises(LookupHandlerStoreError):
@@ -79,7 +79,7 @@ def test_mapping_handler_store(
 
 @pytest.mark.asyncio
 async def test_modifier_handler_store(
-    mockup_action_factory: Callable[[], ActionSubject]
+    mockup_action_factory: Callable[[], ActionSubject],
 ):
     entry_modifiers = MockupModifierFactory.modifiers("xyz")
     entry = HandlerEntry(

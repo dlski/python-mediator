@@ -18,7 +18,7 @@ def _result(*args, **kwargs):
 
 
 @pytest.mark.parametrize(
-    "subject_name, arg_map, allow_args, expected_result",
+    ("subject_name", "arg_map", "allow_args", "expected_result"),
     [
         (None, {}, None, _result("test", a=10, b=20)),
         ("subject", {}, None, _result(subject="test", a=10, b=20)),
@@ -39,7 +39,7 @@ async def test_callable_handler_call(
         arg_map=arg_map,
         allow_args=allow_args,
     )
-    assert handler.key == str
+    assert handler.key is str
     assert handler.obj == _fn
     result = await handler(action)
     assert isinstance(result, ActionResult)

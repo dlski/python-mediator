@@ -1,7 +1,7 @@
 import inspect
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import Any, List, Optional, get_type_hints
+from typing import Any, get_type_hints
 
 
 @dataclass
@@ -13,7 +13,7 @@ class CallableArg:
     # argument name
     name: str
     # argument type annotation
-    type: Optional[Any]
+    type: Any | None
     # argument is positional flag
     is_positional: bool
 
@@ -39,13 +39,13 @@ class CallableIODetails:
     """
 
     # list of callable arguments details
-    args: List[CallableArg]
+    args: list[CallableArg]
     # when True callable accepts variadic keyword args like **kwargs
     has_kwargs: bool
     # return type annotation
-    return_type: Optional[Any]
+    return_type: Any | None
 
-    def arg_by_name(self, name: str) -> Optional[CallableArg]:
+    def arg_by_name(self, name: str) -> CallableArg | None:
         """
         Returns callable argument details with matching name,
         or None when there is no match.

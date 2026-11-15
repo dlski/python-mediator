@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from mediator.event.base import EventPublisher
 
@@ -24,8 +24,8 @@ class EventAggregate:
     Used for staging events and publishing them in one transaction.
     """
 
-    _publisher: Optional[EventPublisher]
-    _staged: List[Tuple[Any, Dict[str, Any]]]
+    _publisher: EventPublisher | None
+    _staged: list[tuple[Any, dict[str, Any]]]
 
     def __init__(self):
         """

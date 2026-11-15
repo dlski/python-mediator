@@ -1,4 +1,5 @@
-from typing import Any, Callable, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import pytest
 
@@ -75,14 +76,14 @@ def _check_incompatible_error(error: HandlerFactoryCascadeError):
     assert len(factory_errors) == 2
 
     for (factory, factory_error), factory_type in zip(
-        factory_errors, [MethodHandlerFactory, CallableHandlerFactory]
+        factory_errors, [MethodHandlerFactory, CallableHandlerFactory], strict=False
     ):
         assert isinstance(factory, factory_type)
         assert isinstance(factory_error, IncompatibleHandlerFactoryError)
 
 
 @pytest.mark.parametrize(
-    "obj, policies, error_check",
+    ("obj", "policies", "error_check"),
     [
         (None, [], _check_config_error),
         (_A(), [MethodHandlerPolicy(name="method_no_type")], _check_inspect_error),
@@ -98,7 +99,7 @@ def test_handler_factory_cascade_error(
     policies: Sequence[PolicyType],
     error_check: Callable[[HandlerFactoryCascadeError], Any],
 ):
-    with pytest.raises(HandlerFactoryCascadeError) as e:
+    with pytest.raises(HandlerFactoryCascadeError) as e:  # noqa: PT012
         cascade = HandlerFactoryCascade(policies=policies)
         cascade(obj)
     error_check(e.value)

@@ -11,9 +11,9 @@ __all__ = [
     "ConfigEventAggregateError",
     "EventAggregate",
     "EventAggregateError",
+    "EventHandlerRegistry",
     "EventPublish",
     "EventPublisher",
     "EventSubscriber",
     "LocalEventBus",
-    "EventHandlerRegistry",
 ]

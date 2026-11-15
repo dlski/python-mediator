@@ -1,6 +1,7 @@
 import asyncio
 from collections import defaultdict
-from typing import Any, DefaultDict, Hashable, Iterable, List, Optional, Sequence
+from collections.abc import Hashable, Iterable, Sequence
+from typing import Any
 
 from mediator.common.factory import (
     CallableHandlerPolicy,
@@ -24,7 +25,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
     Schedules event processing as background asyncio tasks.
     """
 
-    _groups: DefaultDict[Hashable, List[ActionCallType]]
+    _groups: defaultdict[Hashable, list[ActionCallType]]
 
     def __init__(self, sync_mode: bool = False):
         """
@@ -72,7 +73,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         """
         key = action.key
         group: Sequence[ActionCallType] = self._groups.get(key, ())
-        tasks = [asyncio.create_task(call(action)) for call in group]
+        tasks = [asyncio.ensure_future(call(action)) for call in group]
         if self.sync_mode:
             await asyncio.wait(tasks)
 
@@ -87,8 +88,8 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
 
     def __init__(
         self,
-        policies: Optional[Sequence[PolicyType]] = None,
-        cascade: Optional[HandlerFactoryCascade] = None,
+        policies: Sequence[PolicyType] | None = None,
+        cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
         sync_mode: bool = False,
     ):

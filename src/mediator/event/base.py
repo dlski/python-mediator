@@ -1,4 +1,6 @@
-from typing import Any, AsyncContextManager, Iterable, Iterator
+from collections.abc import Iterable, Iterator
+from contextlib import AbstractAsyncContextManager
+from typing import Any
 
 from mediator.common.registry import HandlerEntry, HandlerStore
 from mediator.utils.context import AsyncNullContextManager
@@ -24,7 +26,7 @@ class EventPublisher(EventPublish):
     """
 
     # noinspection PyMethodMayBeStatic
-    def transaction(self) -> AsyncContextManager[EventPublish]:
+    def transaction(self) -> AbstractAsyncContextManager[EventPublish]:
         """
         Provides transaction context manager returning event publish interface,
         to publish events inside of transaction.

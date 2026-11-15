@@ -1,4 +1,4 @@
-from typing import Dict, Hashable, Iterable, Iterator, List, Sequence
+from collections.abc import Hashable, Iterable, Iterator, Sequence
 
 from mediator.common.modifiers import ModifierFactory
 from mediator.common.registry.base import (
@@ -21,7 +21,7 @@ class CollectionHandlerStore(HandlerStore):
         """
         Initializes collection handler store
         """
-        self._entries: List[HandlerEntry] = []
+        self._entries: list[HandlerEntry] = []
 
     def add(self, entry: HandlerEntry):
         """
@@ -57,7 +57,7 @@ class MappingHandlerStore(HandlerStore):
         """
         Initializes mapping handler store
         """
-        self._map: Dict[Hashable, HandlerEntry] = {}
+        self._map: dict[Hashable, HandlerEntry] = {}
 
     def add(self, entry: HandlerEntry):
         """

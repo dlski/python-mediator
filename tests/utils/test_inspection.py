@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Type
+from collections.abc import Sequence
 
 import pytest
 
@@ -12,15 +12,15 @@ class X:
 def _check_arg(
     args: Sequence[CallableArg],
     names: Sequence[str] = ("x", "other"),
-    types: Sequence[Optional[Type]] = (X, int),
+    types: Sequence[type | None] = (X, int),
     positionals: Sequence[bool] = (True, True),
 ):
     assert len(args) == len(names)
-    for arg, name in zip(args, names):
+    for arg, name in zip(args, names, strict=False):
         assert arg.name == name
-    for arg, type_ in zip(args, types):
+    for arg, type_ in zip(args, types, strict=False):
         assert arg.type == type_
-    for arg, is_positional in zip(args, positionals):
+    for arg, is_positional in zip(args, positionals, strict=False):
         assert arg.is_positional == is_positional
 
 
@@ -94,13 +94,13 @@ class Methods:
         assert not details.is_method
         assert not details.is_routine
         assert details.is_async
-        assert details.return_type == str
+        assert details.return_type is str
         _check_arg(details.args, types=[X, int])
 
 
 # noinspection PyUnusedLocal
 async def a(x: X, other: int) -> X:
-    pass
+    return x
 
 
 def a_check(details: CallableDetails):
@@ -123,7 +123,7 @@ def b_check(details: CallableDetails):
 
 
 @pytest.mark.parametrize(
-    "fn, test_fn",
+    ("fn", "test_fn"),
     [
         (Methods().a, Methods.a_check),
         (Methods().b, Methods.b_check),

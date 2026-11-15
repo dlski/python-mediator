@@ -55,3 +55,25 @@ exclude_also = [
     "if TYPE_CHECKING:",
     "@overload",
 ]
+
+[tool.ruff]
+line-length = 88
+src = ["src", "."]
+
+[tool.ruff.lint]
+select = [
+    "E",     # pycodestyle
+    "W",
+    "F",     # pyflakes
+    "I",     # isort
+    "UP",    # pyupgrade
+    "B",     # bugbear
+    "C4",    # comprehensions
+    "SIM",   # simplify
+    "PT",    # pytest style
+    "ASYNC", # asyncio pitfalls
+    "RUF",   # ruff specific
+]
+
+[tool.mypy]
+files = ["src", "tests", "example"]

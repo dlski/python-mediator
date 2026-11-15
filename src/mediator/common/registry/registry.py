@@ -1,5 +1,6 @@
 import functools
-from typing import Any, Iterable, Iterator, Optional, Sequence
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Any
 
 from mediator.common.factory.cascade import HandlerFactoryCascade
 from mediator.common.factory.policies import PolicyType
@@ -19,8 +20,8 @@ class HandlerRegistry(HandlerStore):
     def __init__(
         self,
         store: HandlerStore,
-        policies: Optional[Sequence[PolicyType]] = None,
-        cascade: Optional[HandlerFactoryCascade] = None,
+        policies: Sequence[PolicyType] | None = None,
+        cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
     ):
         """
@@ -47,9 +48,9 @@ class HandlerRegistry(HandlerStore):
 
     def register(
         self,
-        obj: Optional[Any] = None,
+        obj: Any | None = None,
         *,
-        policies: Optional[Sequence[PolicyType]] = None,
+        policies: Sequence[PolicyType] | None = None,
         modifiers: Sequence[ModifierFactory] = (),
     ):
         """
@@ -79,7 +80,7 @@ class HandlerRegistry(HandlerStore):
             return obj
 
     def _policies_cascade(
-        self, policies: Optional[Sequence[PolicyType]]
+        self, policies: Sequence[PolicyType] | None
     ) -> HandlerFactoryCascade:
         """
         Provides handler factory cascade customized with given policies.

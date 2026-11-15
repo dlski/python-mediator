@@ -1,5 +1,5 @@
 import asyncio
-from typing import Mapping, Type
+from collections.abc import Mapping
 
 import pytest
 
@@ -15,7 +15,7 @@ class _MockupEvent2:
     pass
 
 
-def _create_event_handler(events: Mapping[int, asyncio.Event], index: int, type_: Type):
+def _create_event_handler(events: Mapping[int, asyncio.Event], index: int, type_: type):
     async def _event_handler(_: type_):  # type: ignore
         await asyncio.sleep(0.0)
         events[index].set()

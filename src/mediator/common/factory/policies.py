@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Type, Union
 
 
 class MappablePolicy:
@@ -26,9 +25,9 @@ class CallableHandlerPolicy(MappablePolicy):
     """
 
     # subject arg is to provide explicit primary argument name
-    subject_arg: Optional[str] = None
+    subject_arg: str | None = None
     # arg map can be used for action args names to callable args names mapping
-    arg_map: Dict[str, str] = field(default_factory=dict)
+    arg_map: dict[str, str] = field(default_factory=dict)
     # force fill all action arguments into callable or only ones defined in signature
     arg_strict: bool = False
 
@@ -67,7 +66,7 @@ class MethodHandlerPolicy(MappablePolicy):
     # attribute value callable handler policy
     policy: CallableHandlerPolicy = field(default_factory=CallableHandlerPolicy)
     # optional object type check (as be one of provided type sequence)
-    subtype_of: List[Type] = field(default_factory=list)
+    subtype_of: list[type] = field(default_factory=list)
 
     @property
     def precises_type(self) -> bool:
@@ -94,4 +93,4 @@ class MethodHandlerPolicy(MappablePolicy):
             return self
 
 
-PolicyType = Union[CallableHandlerPolicy, MethodHandlerPolicy, MappablePolicy]
+PolicyType = CallableHandlerPolicy | MethodHandlerPolicy | MappablePolicy

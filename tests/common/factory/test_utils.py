@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Type
+from collections.abc import Sequence
 
 import pytest
 
@@ -21,7 +21,7 @@ class _B(_A):
         return
 
     # noinspection PyUnusedLocal
-    def method(self, one: str, two: int, three: Optional[str], four) -> _A:
+    def method(self, one: str, two: int, three: str | None, four) -> _A:
         return self
 
 
@@ -61,7 +61,7 @@ def test_callable_obj_details():
 
 
 @pytest.mark.parametrize(
-    "obj, subtype_of, error, error_message",
+    ("obj", "subtype_of", "error", "error_message"),
     [
         (_B(), (), None, None),
         (_A(), (), IncompatibleHandlerFactoryError, "no attribute"),
@@ -72,9 +72,9 @@ def test_callable_obj_details():
 )
 def test_callable_attribute_details(
     obj,
-    subtype_of: Sequence[Type],
-    error: Optional[Type[Exception]],
-    error_message: Optional[str],
+    subtype_of: Sequence[type],
+    error: type[Exception] | None,
+    error_message: str | None,
 ):
     get_details = CallableAttributeDetails(name="method", owner_subtype_of=subtype_of)
     if error:
@@ -88,7 +88,7 @@ def test_callable_attribute_details(
 
 
 @pytest.mark.parametrize(
-    "obj, name, expected_name, error, error_message",
+    ("obj", "name", "expected_name", "error", "error_message"),
     [
         (_B().method, None, "one", None, None),
         (_B().method, "two", "two", None, None),
@@ -118,10 +118,10 @@ def test_callable_attribute_details(
 )
 def test_subject_arg_get(
     obj,
-    name: Optional[str],
+    name: str | None,
     expected_name,
-    error: Optional[Type[Exception]],
-    error_message: Optional[str],
+    error: type[Exception] | None,
+    error_message: str | None,
 ):
     get_details = CallableObjDetails()
     arg_get = HandlerSubjectArgGet(name=name)
@@ -142,7 +142,7 @@ def _result(*args, **kwargs):
 
 
 @pytest.mark.parametrize(
-    "obj, sig, name, arg_map, expected_result",
+    ("obj", "sig", "name", "arg_map", "expected_result"),
     [
         (_C.async_call, _C.a_signature, None, {}, _result("test", x=1, y=2)),
         (_C.async_call, _C.a_signature, "arg", {}, _result(arg="test", x=1, y=2)),
@@ -160,8 +160,8 @@ def _result(*args, **kwargs):
 async def test_direct_handler_create_successful(
     obj,
     sig,
-    name: Optional[str],
-    arg_map: Dict[str, str],
+    name: str | None,
+    arg_map: dict[str, str],
     expected_result,
 ):
     get_details = CallableObjDetails()
@@ -183,7 +183,7 @@ async def test_direct_handler_create_successful(
 
 
 @pytest.mark.parametrize(
-    "obj, error, error_message",
+    ("obj", "error", "error_message"),
     [
         (_C.sync_call, HandlerFactoryError, "not async callable"),
     ],

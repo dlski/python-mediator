@@ -1,4 +1,5 @@
-from typing import Any, Hashable
+from collections.abc import Hashable
+from typing import Any
 
 from mediator.common.types import ActionResult, ActionSubject
 

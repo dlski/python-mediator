@@ -14,17 +14,14 @@ from mediator.common.registry.stores import (
 )
 
 __all__ = [
-    # base
+    "CollectionHandlerStore",
     "CollisionHandlerStoreError",
     "HandlerEntry",
+    "HandlerRegistry",
     "HandlerStore",
     "HandlerStoreError",
     "InspectionHandlerStoreError",
     "LookupHandlerStoreError",
-    # registry
-    "HandlerRegistry",
-    # stores
-    "CollectionHandlerStore",
     "MappingHandlerStore",
     "ModifierHandlerStore",
 ]

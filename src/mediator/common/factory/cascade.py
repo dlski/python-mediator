@@ -1,4 +1,5 @@
-from typing import Any, Iterable, Optional, Sequence, Tuple
+from collections.abc import Iterable, Sequence
+from typing import Any
 
 from mediator.common.factory.base import (
     HandlerFactoryError,
@@ -57,7 +58,7 @@ class IncompatibleHandlerFactoryCascadeError(HandlerFactoryCascadeError):
         self,
         *args,
         factory_errors: Sequence[
-            Tuple[HandlerFactory, IncompatibleHandlerFactoryError]
+            tuple[HandlerFactory, IncompatibleHandlerFactoryError]
         ],
     ):
         """
@@ -81,7 +82,7 @@ class HandlerFactoryCascade:
     def __init__(
         self,
         policies: Iterable[PolicyType],
-        mapper: Optional[HandlerFactoryMapper] = None,
+        mapper: HandlerFactoryMapper | None = None,
     ):
         """
         Initializes handler factory cascade.

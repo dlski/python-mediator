@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from mediator.common.factory import (
     CallableHandlerPolicy,
@@ -18,8 +18,8 @@ class EventHandlerRegistry(HandlerRegistry):
 
     def __init__(
         self,
-        policies: Optional[Sequence[PolicyType]] = None,
-        cascade: Optional[HandlerFactoryCascade] = None,
+        policies: Sequence[PolicyType] | None = None,
+        cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
     ):
         """

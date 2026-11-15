@@ -1,4 +1,5 @@
-from typing import Any, Dict, Hashable, Iterable, Optional, Sequence
+from collections.abc import Hashable, Iterable, Sequence
+from typing import Any
 
 from mediator.common.factory import (
     CallableHandlerPolicy,
@@ -22,7 +23,7 @@ class _RequestExecutorHandlerStore(MappingHandlerStore):
     to work with local request execution.
     """
 
-    _calls: Dict[Hashable, ActionCallType]
+    _calls: dict[Hashable, ActionCallType]
 
     def __init__(self):
         """
@@ -87,8 +88,8 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
 
     def __init__(
         self,
-        policies: Optional[Sequence[PolicyType]] = None,
-        cascade: Optional[HandlerFactoryCascade] = None,
+        policies: Sequence[PolicyType] | None = None,
+        cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
     ):
         """
@@ -123,7 +124,7 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         :return: request processing result
         """
         result = await self._executor(ActionSubject(subject=obj, inject=kwargs))
-        assert isinstance(
-            result, ActionResult
-        ), "modifier or handler should provide `ActionResult` type object"
+        assert isinstance(result, ActionResult), (
+            "modifier or handler should provide `ActionResult` type object"
+        )
         return result.result

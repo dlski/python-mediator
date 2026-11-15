@@ -1,5 +1,5 @@
+from collections.abc import Hashable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from typing import Hashable, Iterable, Iterator, Sequence
 
 from mediator.common.handler.base import Handler
 from mediator.common.modifiers import ModifierFactory, ModifierStack
@@ -47,7 +47,7 @@ class HandlerEntry:
         """
         return HandlerEntry(
             handler=self.handler,
-            modifiers=tuple([*modifiers, *self.modifiers]),
+            modifiers=(*modifiers, *self.modifiers),
         )
 
 
