@@ -1,13 +1,10 @@
 from collections.abc import Sequence
+from typing import Protocol
 
-from mediator.common.types import (  # noqa F401
-    ActionCallType,
-    ActionResult,
-    ActionSubject,
-)
+from mediator.common.types import ActionCallType
 
 
-class ModifierFactory:
+class ModifierFactory(Protocol):
     """
     Modifier factory.
 
@@ -15,13 +12,15 @@ class ModifierFactory:
     that wraps given callable into it with extra behaviour.
     """
 
-    def create(self, call: ActionCallType, **kwargs) -> ActionCallType:
+    def create(self, call: ActionCallType, *, target: ActionCallType) -> ActionCallType:
         """
         Produces action callable that wraps given one with extra behaviour.
 
         Example:
         >>> class SomeModifierFactory:
-        >>>     def create(self, call: ActionCallType, **kwargs) -> ActionCallType:
+        >>>     def create(
+        >>>         self, call: ActionCallType, *, target: ActionCallType
+        >>>     ) -> ActionCallType:
         >>>         async def wrapper(action: ActionSubject) -> ActionResult:
         >>>             # ... extra logic for arguments inspection or modification
         >>>             result = await call(action)
@@ -31,12 +30,12 @@ class ModifierFactory:
         >>>         return wrapper
 
         :param call: callable to be wrapped
-        :param kwargs: extra context information; currently contains:
-        target - final callable in stack (if stack of modifiers is built)
+        :param target: final callable in stack (if stack of modifiers is built);
+        it is a `Handler` object when stack is built by handler registry
         :return: wrapped action callable that calls given one
         and acts with arguments or result
         """
-        raise NotImplementedError
+        ...
 
 
 class ModifierStack:

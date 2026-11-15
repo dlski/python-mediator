@@ -77,3 +77,10 @@ select = [
 
 [tool.mypy]
 files = ["src", "tests", "example"]
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*", "example.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false

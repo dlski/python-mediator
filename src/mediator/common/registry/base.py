@@ -1,5 +1,6 @@
 from collections.abc import Hashable, Iterable, Iterator, Sequence
 from dataclasses import dataclass
+from typing import Protocol
 
 from mediator.common.handler.base import Handler
 from mediator.common.modifiers import ModifierFactory, ModifierStack
@@ -86,30 +87,30 @@ class LookupHandlerStoreError(LookupError, HandlerStoreError):
     """
 
 
-class HandlerStore:
+class HandlerStore(Protocol):
     """
     Handler store abstraction.
 
     Handler stores are used for storing handler entries.
     """
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store.
         :param entry: handler entry to add into store
         """
-        raise NotImplementedError
+        ...
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store.
         :param entries: handler entries iterator
         """
-        raise NotImplementedError
+        ...
 
     def __iter__(self) -> Iterator[HandlerEntry]:
         """
         Returns iterator providing all underlying store handler entries.
         :return: iterator providing all underlying store handler entries.
         """
-        raise NotImplementedError
+        ...

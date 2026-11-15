@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
 from collections.abc import Iterable, Sequence
-from typing import Any
+from typing import Any, Protocol
 
 from mediator.common.handler import Handler
 
@@ -21,17 +22,25 @@ class IncompatibleHandlerFactoryError(TypeError, HandlerFactoryError):
     """
 
 
-class HandlerFactory:
+class HandlerFactory(Protocol):
     """
     Handler factory is an abstraction over action handler creation
     form underlying object.
     """
 
     def create(self, obj: Any) -> Handler:
-        raise NotImplementedError
+        """
+        Creates handler for given object.
+        :param obj: object to create handler for
+        :raises IncompatibleHandlerFactoryError: when object is incompatible
+        with factory specification
+        :raises HandlerFactoryError: when there is failure during object inspection
+        :return: handler for given object
+        """
+        ...
 
 
-class HandlerFactoryMapper:
+class HandlerFactoryMapper(ABC):
     """
     Handler factory mapper abstraction.
     Maps policy (specification) into handler factory object.
@@ -45,10 +54,10 @@ class HandlerFactoryMapper:
         """
         return [self.map(policy) for policy in policies]
 
+    @abstractmethod
     def map(self, policy: Any) -> HandlerFactory:
         """
         Maps given policy (specification) into handler factory
         :param policy: given policy (specification)
         :return: handler factory object
         """
-        raise NotImplementedError

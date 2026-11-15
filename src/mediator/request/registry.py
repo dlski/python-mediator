@@ -21,7 +21,7 @@ class RequestHandlerRegistry(HandlerRegistry):
         policies: Sequence[PolicyType] | None = None,
         cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
-    ):
+    ) -> None:
         """
         Initializes request handler registry.
         :param policies:
@@ -34,8 +34,7 @@ class RequestHandlerRegistry(HandlerRegistry):
         policy into handler factory mapping
         :param modifiers: sequence of modifiers to be applied on new handler entries
         """
-        HandlerRegistry.__init__(
-            self,
+        super().__init__(
             store=MappingHandlerStore(),
             policies=policies or [CallableHandlerPolicy()],
             cascade=cascade,

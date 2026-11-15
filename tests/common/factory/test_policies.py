@@ -7,7 +7,7 @@ from mediator.common.factory import (
 
 def test_base_handler_policy():
     policy = MappablePolicy()
-    returned_policy = policy.replace_map(None)
+    returned_policy = policy.replace_map(MappablePolicy())
     assert returned_policy is policy
 
 
@@ -20,7 +20,7 @@ def test_callable_handler_policy():
 
     second_policy = CallableHandlerPolicy()
     assert policy.replace_map(second_policy) is second_policy
-    assert policy.replace_map(None) is policy
+    assert policy.replace_map(MappablePolicy()) is policy
 
 
 def test_method_handler_policy():
@@ -40,4 +40,4 @@ def test_method_handler_policy():
     second_policy = MethodHandlerPolicy(name="other")
     assert policy.replace_map(second_policy) is second_policy
 
-    assert policy.replace_map(None) is policy
+    assert policy.replace_map(MappablePolicy()) is policy

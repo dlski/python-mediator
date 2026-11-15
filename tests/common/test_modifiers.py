@@ -10,7 +10,7 @@ class MockupModifierFactory(ModifierFactory):
     def __init__(self, seq_item: str):
         self.seq_item = seq_item
 
-    def create(self, call: ActionCallType, **kwargs) -> ActionCallType:
+    def create(self, call: ActionCallType, *, target: ActionCallType) -> ActionCallType:
         seq_item = self.seq_item
 
         async def _op(action: ActionSubject):

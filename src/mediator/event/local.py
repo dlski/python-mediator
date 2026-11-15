@@ -15,7 +15,7 @@ from mediator.common.registry import (
     HandlerRegistry,
 )
 from mediator.common.types import ActionCallType, ActionSubject
-from mediator.event.base import EventPublisher, EventSubscriber
+from mediator.event.base import EventPublisher
 
 
 class _EventSchedulerHandlerStore(CollectionHandlerStore):
@@ -27,7 +27,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
 
     _groups: defaultdict[Hashable, list[ActionCallType]]
 
-    def __init__(self, sync_mode: bool = False):
+    def __init__(self, sync_mode: bool = False) -> None:
         """
         Initializes event scheduler handler store.
         :param sync_mode: are events should be processed in background
@@ -39,7 +39,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         self._groups = defaultdict(list)
         self.sync_mode = sync_mode
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store
         and connects handler entry to process events.
@@ -48,7 +48,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         super().add(entry)
         self._map_call(entry)
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store
         and connects all handler entries from given iterable to process events.
@@ -58,14 +58,14 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         for entry in entries:
             self._map_call(entry)
 
-    def _map_call(self, entry: HandlerEntry):
+    def _map_call(self, entry: HandlerEntry) -> None:
         """
         Add given handler entry to event processing.
         :param entry: handler entry to add
         """
         self._groups[entry.key].append(entry.handler_pipeline())
 
-    async def schedule(self, action: ActionSubject):
+    async def schedule(self, action: ActionSubject) -> None:
         """
         Schedule given action object to be processed as event
         by all collected handlers.
@@ -78,7 +78,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
             await asyncio.wait(tasks)
 
 
-class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
+class LocalEventBus(HandlerRegistry, EventPublisher):
     """
     Local event bus.
 
@@ -92,7 +92,7 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
         sync_mode: bool = False,
-    ):
+    ) -> None:
         """
         Initializes local event bus with given specification.
         :param policies:
@@ -106,8 +106,7 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         :param modifiers: sequence of modifiers to be applied on new handler entries
         """
         scheduler_store = _EventSchedulerHandlerStore(sync_mode=sync_mode)
-        HandlerRegistry.__init__(
-            self,
+        super().__init__(
             store=scheduler_store,
             policies=policies or [CallableHandlerPolicy()],
             cascade=cascade,
@@ -115,7 +114,7 @@ class LocalEventBus(EventPublisher, HandlerRegistry, EventSubscriber):
         )
         self._scheduler = scheduler_store
 
-    async def publish(self, obj: Any, **kwargs):
+    async def publish(self, obj: Any, **kwargs: Any) -> None:
         """
         Publishes given event.
         :param obj: event object

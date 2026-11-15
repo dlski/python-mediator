@@ -1,16 +1,16 @@
-from typing import Any
+from typing import Any, Protocol
 
 
-class RequestExecutor:
+class RequestExecutor(Protocol):
     """
     Request executor interface.
     """
 
-    async def execute(self, obj: Any, **kwargs) -> Any:
+    async def execute(self, obj: Any, **kwargs: Any) -> Any:
         """
         Executes given request and returns execution result.
         :param obj: request object
         :param kwargs: optional extra arguments
         :return: request execution result
         """
-        raise NotImplementedError
+        ...

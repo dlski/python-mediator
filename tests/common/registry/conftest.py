@@ -13,7 +13,7 @@ class MockupHandler(Handler):
 
     @property
     def key(self) -> Hashable:
-        return self.type_  # type: ignore
+        return self.type_
 
     @property
     def obj(self) -> Any:

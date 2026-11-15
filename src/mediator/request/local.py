@@ -25,14 +25,14 @@ class _RequestExecutorHandlerStore(MappingHandlerStore):
 
     _calls: dict[Hashable, ActionCallType]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes empty request executor handler store.
         """
         super().__init__()
         self._calls = {}
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store
         and connects handler entry to process requests.
@@ -43,7 +43,7 @@ class _RequestExecutorHandlerStore(MappingHandlerStore):
         super().add(entry)
         self._map_call(entry)
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store
         and connects all handler entries from given iterable to process requests.
@@ -55,7 +55,7 @@ class _RequestExecutorHandlerStore(MappingHandlerStore):
         for entry in entries:
             self._map_call(entry)
 
-    def _map_call(self, entry: HandlerEntry):
+    def _map_call(self, entry: HandlerEntry) -> None:
         """
         Sets given handler entry to request processing.
         :param entry: handler entry to add
@@ -91,7 +91,7 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         policies: Sequence[PolicyType] | None = None,
         cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
-    ):
+    ) -> None:
         """
         Initializes local request bus with given specification.
         :param policies:
@@ -105,8 +105,7 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         :param modifiers: sequence of modifiers to be applied on new handler entries
         """
         executor_store = _RequestExecutorHandlerStore()
-        HandlerRegistry.__init__(
-            self,
+        super().__init__(
             store=executor_store,
             policies=policies or [CallableHandlerPolicy()],
             cascade=cascade,
@@ -114,7 +113,7 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         )
         self._executor = executor_store
 
-    async def execute(self, obj: Any, **kwargs):
+    async def execute(self, obj: Any, **kwargs: Any) -> Any:
         """
         Executes given request.
         :param obj: request object

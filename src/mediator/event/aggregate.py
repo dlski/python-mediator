@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Self
 
 from mediator.event.base import EventPublisher
 
@@ -27,14 +27,14 @@ class EventAggregate:
     _publisher: EventPublisher | None
     _staged: list[tuple[Any, dict[str, Any]]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes empty event aggregate.
         """
         self._publisher = None
         self._staged = []
 
-    def use(self, publisher: EventPublisher):
+    def use(self, publisher: EventPublisher) -> Self:
         """
         Sets event publisher used for event sending.
         :param publisher: event publisher to use
@@ -43,7 +43,7 @@ class EventAggregate:
         self._publisher = publisher
         return self
 
-    async def commit(self):
+    async def commit(self) -> None:
         """
         Commits staged events by underlying publisher.
         """
@@ -57,13 +57,13 @@ class EventAggregate:
 
         self._staged.clear()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Clears all staged events.
         """
         self._staged.clear()
 
-    def enqueue(self, obj: Any, **kwargs):
+    def enqueue(self, obj: Any, **kwargs: Any) -> None:
         """
         Stages given event object with optional extra arguments.
         :param obj: event object

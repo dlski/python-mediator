@@ -1,70 +1,63 @@
 from collections.abc import Iterable, Iterator
-from contextlib import AbstractAsyncContextManager
-from typing import Any
+from contextlib import AbstractAsyncContextManager, nullcontext
+from typing import Any, Protocol
 
 from mediator.common.registry import HandlerEntry, HandlerStore
-from mediator.utils.context import AsyncNullContextManager
 
 
-class EventPublish:
+class EventPublish(Protocol):
     """
     Event publishing interface.
     """
 
-    async def publish(self, obj: Any, **kwargs):
+    async def publish(self, obj: Any, **kwargs: Any) -> None:
         """
         Publishes given event object.
         :param obj: event object to be published
         :param kwargs: extra event arguments
         """
-        raise NotImplementedError
+        ...
 
 
-class EventPublisher(EventPublish):
+class EventPublisher(EventPublish, Protocol):
     """
     Event publisher interface, supporting transactions.
     """
 
-    # noinspection PyMethodMayBeStatic
     def transaction(self) -> AbstractAsyncContextManager[EventPublish]:
         """
         Provides transaction context manager returning event publish interface,
         to publish events inside of transaction.
+
+        Classes that explicitly inherit from this protocol get default behaviour:
+        no transaction, events are published directly by this publisher.
         :return: async context manager returning event publish interface
         """
-        return AsyncNullContextManager(self)
-
-    async def publish(self, obj: Any, **kwargs):
-        """
-        Publishes given event object.
-        :param obj: event object to be published
-        :param kwargs: extra event arguments
-        """
-        raise NotImplementedError
+        return nullcontext(self)
 
 
-class EventSubscriber(HandlerStore):
+class EventSubscriber(HandlerStore, Protocol):
     """
     Event subscriber
     """
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Connects handler entry to process events.
         :param entry: handler entry to connect
         """
-        raise NotImplementedError
+        ...
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Connects all handler entries from given iterable to process events.
         :param entries: handler entries iterator
         """
-        raise NotImplementedError
+        ...
 
     def __iter__(self) -> Iterator[HandlerEntry]:
         """
         Returns iterator providing all underlying handler entries.
         :return: iterator providing all underlying handler entries.
         """
-        raise NotImplementedError
+        ...

@@ -18,7 +18,7 @@ class CallableHandlerFactory(HandlerFactory):
     Factory that produces callable handler directly from callable object.
     """
 
-    def __init__(self, policy: CallableHandlerPolicy):
+    def __init__(self, policy: CallableHandlerPolicy) -> None:
         """
         Initializes callable handler factory.
         :param policy: policy used as a configuration or specification
@@ -54,7 +54,7 @@ class MethodHandlerFactory(HandlerFactory):
     - in most cases method.
     """
 
-    def __init__(self, policy: MethodHandlerPolicy):
+    def __init__(self, policy: MethodHandlerPolicy) -> None:
         """
         Initializes method handler factory.
         :param policy: policy used as a configuration or specification

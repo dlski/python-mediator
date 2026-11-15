@@ -1,12 +1,13 @@
-import functools
-from collections.abc import Iterable, Iterator, Sequence
-from typing import Any
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from typing import Any, TypeVar, overload
 
 from mediator.common.factory.cascade import HandlerFactoryCascade
 from mediator.common.factory.policies import PolicyType
 from mediator.common.modifiers import ModifierFactory
 from mediator.common.registry.base import HandlerEntry, HandlerStore
 from mediator.common.registry.stores import ModifierHandlerStore
+
+_T = TypeVar("_T")
 
 
 class HandlerRegistry(HandlerStore):
@@ -23,7 +24,7 @@ class HandlerRegistry(HandlerStore):
         policies: Sequence[PolicyType] | None = None,
         cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
-    ):
+    ) -> None:
         """
         Initializes handler registry.
         :param store: underlying handler store used for handler entry storage
@@ -46,13 +47,31 @@ class HandlerRegistry(HandlerStore):
             raise TypeError("policies or cascade argument should be provided")
         self._store = ModifierHandlerStore.wrap(nested=store, modifiers=modifiers)
 
+    @overload
+    def register(
+        self,
+        obj: None = None,
+        *,
+        policies: Sequence[PolicyType] | None = None,
+        modifiers: Sequence[ModifierFactory] = (),
+    ) -> Callable[[_T], _T]: ...
+
+    @overload
+    def register(
+        self,
+        obj: _T,
+        *,
+        policies: Sequence[PolicyType] | None = None,
+        modifiers: Sequence[ModifierFactory] = (),
+    ) -> _T: ...
+
     def register(
         self,
         obj: Any | None = None,
         *,
         policies: Sequence[PolicyType] | None = None,
         modifiers: Sequence[ModifierFactory] = (),
-    ):
+    ) -> Any:
         """
         Registers given raw object as an action handler
         or provides decorator that registers given raw object as an action handler.
@@ -65,19 +84,15 @@ class HandlerRegistry(HandlerStore):
         """
         cascade = self._policies_cascade(policies)
         if obj is None:
-            register = functools.partial(
-                self._process_obj, cascade=cascade, modifiers=modifiers
-            )
 
-            def wrap(fn: Any):
-                register(fn)
+            def wrap(fn: _T) -> _T:
+                self._process_obj(fn, cascade=cascade, modifiers=modifiers)
                 return fn
 
             return wrap
 
-        else:
-            self._process_obj(obj, cascade=cascade, modifiers=modifiers)
-            return obj
+        self._process_obj(obj, cascade=cascade, modifiers=modifiers)
+        return obj
 
     def _policies_cascade(
         self, policies: Sequence[PolicyType] | None
@@ -99,7 +114,7 @@ class HandlerRegistry(HandlerStore):
         *,
         cascade: HandlerFactoryCascade,
         modifiers: Sequence[ModifierFactory],
-    ):
+    ) -> None:
         """
         Creates handler entry for given raw action handler object.
         :param obj: raw action handler object
@@ -109,14 +124,14 @@ class HandlerRegistry(HandlerStore):
         handler = cascade(obj)
         self.add(HandlerEntry(handler=handler, modifiers=modifiers))
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store.
         :param entry: handler entry to add into store
         """
         self._store.add(entry)
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store.
         :param entries: handler entries iterator

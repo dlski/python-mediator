@@ -2,14 +2,12 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from mediator.common.factory.base import (
+    HandlerFactory,
     HandlerFactoryError,
+    HandlerFactoryMapper,
     IncompatibleHandlerFactoryError,
 )
-from mediator.common.factory.mappers import (
-    DefaultHandlerFactoryMapper,
-    HandlerFactory,
-    HandlerFactoryMapper,
-)
+from mediator.common.factory.mappers import DefaultHandlerFactoryMapper
 from mediator.common.factory.policies import PolicyType
 from mediator.common.handler import Handler
 
@@ -36,7 +34,7 @@ class InspectionHandlerFactoryCascadeError(HandlerFactoryCascadeError):
     raises inspection machinery failure (non usual situation) error.
     """
 
-    def __init__(self, *args, factory: HandlerFactory):
+    def __init__(self, *args: object, factory: HandlerFactory) -> None:
         """
         Initializes inspection handler factory cascade error.
         :param args: python exception args
@@ -56,11 +54,11 @@ class IncompatibleHandlerFactoryCascadeError(HandlerFactoryCascadeError):
 
     def __init__(
         self,
-        *args,
+        *args: object,
         factory_errors: Sequence[
             tuple[HandlerFactory, IncompatibleHandlerFactoryError]
         ],
-    ):
+    ) -> None:
         """
         Initializes incompatible handler factory cascade error.
         :param args: python exception args
@@ -83,7 +81,7 @@ class HandlerFactoryCascade:
         self,
         policies: Iterable[PolicyType],
         mapper: HandlerFactoryMapper | None = None,
-    ):
+    ) -> None:
         """
         Initializes handler factory cascade.
         :param policies: iterable providing sequence of policies

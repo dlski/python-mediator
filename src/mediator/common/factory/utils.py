@@ -37,7 +37,7 @@ class CallableAttributeDetails:
     name: str
     subtype_of: tuple[Any, ...]
 
-    def __init__(self, name: str, owner_subtype_of: Sequence[Any] = ()):
+    def __init__(self, name: str, owner_subtype_of: Sequence[Any] = ()) -> None:
         """
         Initializes callable attribute inspection object,
         that (optionally) checks if object has valid type
@@ -88,7 +88,7 @@ class HandlerSubjectArgGet:
     to be filled with action subject (event, request, command etc object).
     """
 
-    def __init__(self, name: str | None = None):
+    def __init__(self, name: str | None = None) -> None:
         """
         Initializes utility that finds primary argument for given callable object.
         :param name: optional argument name hint;
@@ -131,7 +131,7 @@ class HandlerSubjectArgGet:
             return self._get_first(details)
 
     @staticmethod
-    def _find_by_name(details: CallableDetails, name: str):
+    def _find_by_name(details: CallableDetails, name: str) -> CallableArg:
         """
         Tries to find primary argument by name using given callable details.
         :param details: callable details
@@ -156,7 +156,7 @@ class HandlerSubjectArgGet:
         return details.args[0]
 
     @staticmethod
-    def _check_type(details: CallableDetails, arg: CallableArg):
+    def _check_type(details: CallableDetails, arg: CallableArg) -> None:
         """
         Checks given primary argument candidate is a valid one
         :param details: callable details
@@ -182,7 +182,7 @@ class CallableHandlerCreate:
 
     def __init__(
         self, subject_as_keyword: bool, arg_map: dict[str, str], arg_strict: bool
-    ):
+    ) -> None:
         """
         Initializes callable handler factory using given specification.
         :param subject_as_keyword:

@@ -32,7 +32,7 @@ class CallableHandlerPolicy(MappablePolicy):
     arg_strict: bool = False
 
     @property
-    def subject_as_keyword(self):
+    def subject_as_keyword(self) -> bool:
         """
         Should primary argument provided as a keyword arg.
         :return: True when according to policy primary argument

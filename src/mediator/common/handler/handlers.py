@@ -1,10 +1,12 @@
 from collections.abc import Awaitable, Callable, Collection, Hashable, Mapping
-from typing import (
-    Any,
-)
+from typing import Any
 
 from mediator.common.handler.base import Handler
 from mediator.common.types import ActionResult, ActionSubject
+
+_Kwargs = dict[str, Any]
+_KwargsMap = Callable[[_Kwargs], _Kwargs]
+_ArgsFormer = Callable[[Any, _Kwargs], tuple[tuple[Any, ...], _Kwargs]]
 
 
 class CallableHandler(Handler):
@@ -24,7 +26,7 @@ class CallableHandler(Handler):
         subject_name: str | None,
         arg_map: Mapping[str, str],
         allow_args: Collection[str] | None,
-    ):
+    ) -> None:
         """
         Creates callable handler object.
         :param obj: object used as information of handler behaviour source
@@ -76,7 +78,7 @@ class CallableHandler(Handler):
         return ActionResult(result)
 
     @classmethod
-    def _arg_map_factory(cls, arg_map: Mapping[str, str]):
+    def _arg_map_factory(cls, arg_map: Mapping[str, str]) -> _KwargsMap:
         """
         Argument mapping factory.
         Provides function that maps dictionary of keyword args
@@ -86,20 +88,20 @@ class CallableHandler(Handler):
         """
         if arg_map:
 
-            def _arg_map(kwargs: dict[str, Any]):
+            def _arg_map(kwargs: _Kwargs) -> _Kwargs:
                 return {
                     arg_map.get(name, name): value for name, value in kwargs.items()
                 }
 
         else:
 
-            def _arg_map(kwargs: dict[str, Any]):
+            def _arg_map(kwargs: _Kwargs) -> _Kwargs:
                 return kwargs
 
         return _arg_map
 
     @classmethod
-    def _arg_filter_factory(cls, allow_args: Collection[str] | None):
+    def _arg_filter_factory(cls, allow_args: Collection[str] | None) -> _KwargsMap:
         """
         Argument filter factory.
         Provides function that filters dictionary of underlying callable keyword args.
@@ -110,19 +112,19 @@ class CallableHandler(Handler):
         """
         if allow_args is None:
 
-            def _arg_filter(kwargs: dict[str, Any]):
+            def _arg_filter(kwargs: _Kwargs) -> _Kwargs:
                 return kwargs
 
         else:
             args = set(allow_args)
 
-            def _arg_filter(kwargs: dict[str, Any]):
+            def _arg_filter(kwargs: _Kwargs) -> _Kwargs:
                 return {name: value for name, value in kwargs.items() if name in args}
 
         return _arg_filter
 
     @classmethod
-    def _args_factory(cls, subject_name: str | None):
+    def _args_factory(cls, subject_name: str | None) -> _ArgsFormer:
         """
         Argument former factory.
         Provides function that forms underlying callable *args and **kwargs
@@ -134,17 +136,13 @@ class CallableHandler(Handler):
         """
         if subject_name:
 
-            def _args(
-                subject: Any, kwargs: dict[str, Any]
-            ) -> tuple[tuple[Any, ...], dict[str, Any]]:
-                kwargs[subject_name] = subject  # type: ignore
+            def _args(subject: Any, kwargs: _Kwargs) -> tuple[tuple[Any, ...], _Kwargs]:
+                kwargs[subject_name] = subject
                 return (), kwargs
 
         else:
 
-            def _args(
-                subject: Any, kwargs: dict[str, Any]
-            ) -> tuple[tuple[Any, ...], dict[str, Any]]:
+            def _args(subject: Any, kwargs: _Kwargs) -> tuple[tuple[Any, ...], _Kwargs]:
                 return (subject,), kwargs
 
         return _args

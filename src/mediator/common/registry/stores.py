@@ -17,20 +17,20 @@ class CollectionHandlerStore(HandlerStore):
     without any constraints.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes collection handler store
         """
         self._entries: list[HandlerEntry] = []
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store.
         :param entry: handler entry to add into store
         """
         self._entries.append(entry)
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store.
         :param entries: handler entries iterator
@@ -53,13 +53,13 @@ class MappingHandlerStore(HandlerStore):
     and preserves uniqueness of stored entries by its keys.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes mapping handler store
         """
         self._map: dict[Hashable, HandlerEntry] = {}
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store.
         :param entry: handler entry to add into store
@@ -73,7 +73,7 @@ class MappingHandlerStore(HandlerStore):
             )
         self._map[entry.key] = entry
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store.
         :param entries: handler entries iterator
@@ -110,7 +110,9 @@ class ModifierHandlerStore(HandlerStore):
     and adds modified entries into underlying handler store.
     """
 
-    def __init__(self, nested: HandlerStore, modifiers: Sequence[ModifierFactory]):
+    def __init__(
+        self, nested: HandlerStore, modifiers: Sequence[ModifierFactory]
+    ) -> None:
         """
         Initializes modifier handler store.
         :param nested: handler store used for modified entries storage
@@ -119,14 +121,14 @@ class ModifierHandlerStore(HandlerStore):
         self._nested = nested
         self._modifiers = tuple(modifiers)
 
-    def add(self, entry: HandlerEntry):
+    def add(self, entry: HandlerEntry) -> None:
         """
         Adds given handler entry into store.
         :param entry: handler entry to add into store
         """
         self._nested.add(entry.stack(self._modifiers))
 
-    def include(self, entries: Iterable[HandlerEntry]):
+    def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
         Adds all handler entries from given iterable into store.
         :param entries: handler entries iterator

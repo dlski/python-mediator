@@ -17,7 +17,9 @@ class TypeHandlerFactoryMapper(HandlerFactoryMapper):
     using policy type to handler factory provider mapping.
     """
 
-    def __init__(self, mapping: Mapping[type[Any], Callable[[Any], HandlerFactory]]):
+    def __init__(
+        self, mapping: Mapping[type[Any], Callable[[Any], HandlerFactory]]
+    ) -> None:
         """
         Initializes type handler factory mapper.
         :param mapping: policy type to handler factory provider mapping
@@ -51,7 +53,7 @@ class DefaultHandlerFactoryMapper(TypeHandlerFactoryMapper):
         self,
         extra_mapping: Mapping[type[Any], Callable[[Any], HandlerFactory]]
         | None = None,
-    ):
+    ) -> None:
         """
         Initializes library default handler factory mapper.
         :param extra_mapping:
