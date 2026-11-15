@@ -24,7 +24,10 @@ async def second_handler(event: MessageEvent):
 
 @pytest.mark.asyncio
 async def test_event_simple():
+    # handlers run in background, publishing does not wait for them
     await bus.publish(MessageEvent(message="test"))
+    # wait until all handlers are finished (i.e. on application shutdown)
+    await bus.drain()
     # -- output --
     # first handler: test
     # second handler: test

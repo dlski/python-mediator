@@ -1,6 +1,6 @@
 [project]
 name = "python-mediator"
-version = "0.7.0"
+version = "0.8.0"
 description = "Python mediator bus microframework for CQRS + ES"
 readme = "README.md"
 license = "MIT"

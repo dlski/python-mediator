@@ -11,7 +11,7 @@ from mediator.common.registry import HandlerRegistry, MappingHandlerStore
 
 class RequestHandlerRegistry(HandlerRegistry):
     """
-    Event handler registry class.
+    Request handler registry class.
 
     Registry that registers (adds) and stores request handlers.
     """
