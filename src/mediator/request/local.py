@@ -1,4 +1,4 @@
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Sequence
 from typing import Any
 
 from mediator.common.factory import (
@@ -42,18 +42,6 @@ class _RequestExecutorHandlerStore(MappingHandlerStore):
         """
         super().add(entry)
         self._map_call(entry)
-
-    def include(self, entries: Iterable[HandlerEntry]) -> None:
-        """
-        Adds all handler entries from given iterable into store
-        and connects all handler entries from given iterable to process requests.
-        :param entries: handler entries iterator
-        :raises CollisionHandlerStoreError:
-        when handler entry with given key already exists in this store
-        """
-        super().include(entries)
-        for entry in entries:
-            self._map_call(entry)
 
     def _map_call(self, entry: HandlerEntry) -> None:
         """
@@ -120,10 +108,13 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
         :param kwargs: request extra arguments
         :raises LookupHandlerStoreError:
         when there is no matching handler to process given request
+        :raises TypeError: when modifier or handler returns unexpected type object
         :return: request processing result
         """
         result = await self._executor(ActionSubject(subject=obj, inject=kwargs))
-        assert isinstance(result, ActionResult), (
-            "modifier or handler should provide `ActionResult` type object"
-        )
+        if not isinstance(result, ActionResult):
+            raise TypeError(
+                "modifier or handler should provide `ActionResult` type object,"
+                f" got {type(result).__qualname__}"
+            )
         return result.result

@@ -1,10 +1,16 @@
 import asyncio
+import logging
 from collections.abc import Mapping
 
 import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
-from mediator.event import EventHandlerRegistry, LocalEventBus
+from mediator.event import (
+    AwaitingEventDispatcher,
+    BackgroundEventDispatcher,
+    EventHandlerRegistry,
+    LocalEventBus,
+)
 
 
 class _MockupEvent1:
@@ -47,17 +53,124 @@ async def test_local_event_bus():
             await asyncio.wait_for(event.wait(), timeout=0.5)
 
 
+class _HandlerError(Exception):
+    pass
+
+
 @pytest.mark.asyncio
-async def test_local_event_bus_sync():
+async def test_local_event_bus_awaiting():
     cnt = {"test": 0}
 
     async def _handler(event: str):
         await asyncio.sleep(0.0)
         cnt[event] += 1
 
-    policies = [CallableHandlerPolicy()]
-    bus = LocalEventBus(policies=policies, sync_mode=True)
-    bus.register(_handler, policies=policies)
-    bus.register(_handler, policies=policies)
+    bus = LocalEventBus(dispatcher=AwaitingEventDispatcher())
+    bus.register(_handler)
+    bus.register(_handler)
     await bus.publish("test")
     assert cnt["test"] == 2
+
+    # nothing to wait for
+    await bus.publish(object())
+    await bus.drain()
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_awaiting_error():
+    finished = []
+
+    async def _failing(event: str):
+        raise _HandlerError(event)
+
+    async def _working(event: str):
+        await asyncio.sleep(0.0)
+        finished.append(event)
+
+    bus = LocalEventBus(dispatcher=AwaitingEventDispatcher())
+    bus.register(_failing)
+    bus.register(_working)
+    bus.register(_failing)
+
+    with pytest.raises(ExceptionGroup) as e:
+        await bus.publish("test")
+    assert [type(error) for error in e.value.exceptions] == [_HandlerError] * 2
+    assert finished == ["test"]
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_background_drain():
+    finished: list[object] = []
+    bus = LocalEventBus()
+
+    @bus.register
+    async def _first(event: str):
+        await asyncio.sleep(0.0)
+        await bus.publish(len(event))
+        finished.append(event)
+
+    @bus.register
+    async def _second(event: int):
+        await asyncio.sleep(0.0)
+        finished.append(event)
+
+    await bus.publish("test")
+    assert finished == []
+
+    await bus.drain()
+    assert finished == ["test", 4]
+    await bus.drain()
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_background_error():
+    errors = []
+    bus = LocalEventBus(
+        dispatcher=BackgroundEventDispatcher(
+            on_error=lambda action, error: errors.append((action.subject, error))
+        )
+    )
+
+    @bus.register
+    async def _failing(event: str):
+        raise _HandlerError(event)
+
+    await bus.publish("test")
+    await bus.drain()
+    [(subject, error)] = errors
+    assert subject == "test"
+    assert isinstance(error, _HandlerError)
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_background_error_log(caplog: pytest.LogCaptureFixture):
+    bus = LocalEventBus()
+
+    @bus.register
+    async def _failing(event: str):
+        raise _HandlerError(event)
+
+    with caplog.at_level(logging.ERROR, logger="mediator.event.dispatch"):
+        await bus.publish("test")
+        await bus.drain()
+    [record] = caplog.records
+    assert "Event str handler failed" in record.getMessage()
+    assert record.exc_info is not None
+    assert isinstance(record.exc_info[1], _HandlerError)
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_include_iterator():
+    handled = []
+    registry = EventHandlerRegistry()
+
+    @registry.register
+    async def _handler(event: str):
+        handled.append(event)
+
+    bus = LocalEventBus(dispatcher=AwaitingEventDispatcher())
+    bus.include(iter(registry))
+    assert len(list(bus)) == 1
+
+    await bus.publish("test")
+    assert handled == ["test"]

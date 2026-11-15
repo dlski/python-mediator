@@ -1,4 +1,3 @@
-import asyncio
 from collections import defaultdict
 from collections.abc import Hashable, Iterable, Sequence
 from typing import Any
@@ -16,28 +15,22 @@ from mediator.common.registry import (
 )
 from mediator.common.types import ActionCallType, ActionSubject
 from mediator.event.base import EventPublisher
+from mediator.event.dispatch import BackgroundEventDispatcher, EventDispatcher
 
 
-class _EventSchedulerHandlerStore(CollectionHandlerStore):
+class _EventCallHandlerStore(CollectionHandlerStore):
     """
     Utility event handler store, based on collection handler store
     to work with local event execution.
-    Schedules event processing as background asyncio tasks.
+    Keeps event handler calls grouped by event key.
     """
 
-    _groups: defaultdict[Hashable, list[ActionCallType]]
-
-    def __init__(self, sync_mode: bool = False) -> None:
+    def __init__(self) -> None:
         """
-        Initializes event scheduler handler store.
-        :param sync_mode: are events should be processed in background
-        when True every schedule call waits on event processing to finish
-        when False (default) event processing is executed in background;
-        useful in test cases
+        Initializes empty event call handler store.
         """
         super().__init__()
-        self._groups = defaultdict(list)
-        self.sync_mode = sync_mode
+        self._groups: defaultdict[Hashable, list[ActionCallType]] = defaultdict(list)
 
     def add(self, entry: HandlerEntry) -> None:
         """
@@ -46,7 +39,7 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         :param entry: handler entry to connect
         """
         super().add(entry)
-        self._map_call(entry)
+        self._groups[entry.key].append(entry.handler_pipeline())
 
     def include(self, entries: Iterable[HandlerEntry]) -> None:
         """
@@ -54,35 +47,24 @@ class _EventSchedulerHandlerStore(CollectionHandlerStore):
         and connects all handler entries from given iterable to process events.
         :param entries: handler entries iterator
         """
-        super().include(entries)
         for entry in entries:
-            self._map_call(entry)
+            self.add(entry)
 
-    def _map_call(self, entry: HandlerEntry) -> None:
+    def calls(self, key: Hashable) -> Sequence[ActionCallType]:
         """
-        Add given handler entry to event processing.
-        :param entry: handler entry to add
+        Provides all event handler calls connected to given event key.
+        :param key: event key
+        :return: sequence of event handler calls (empty when nothing is connected)
         """
-        self._groups[entry.key].append(entry.handler_pipeline())
-
-    async def schedule(self, action: ActionSubject) -> None:
-        """
-        Schedule given action object to be processed as event
-        by all collected handlers.
-        :param action: event action to be processed
-        """
-        key = action.key
-        group: Sequence[ActionCallType] = self._groups.get(key, ())
-        tasks = [asyncio.ensure_future(call(action)) for call in group]
-        if self.sync_mode:
-            await asyncio.wait(tasks)
+        return self._groups.get(key, ())
 
 
 class LocalEventBus(HandlerRegistry, EventPublisher):
     """
     Local event bus.
 
-    Performs event execution scheduling locally in-place as asyncio backgrount tasks.
+    Runs event handlers locally in-place using event dispatcher
+    (by default as asyncio background tasks).
     Connects behaviours of handler registry and event publisher interface.
     """
 
@@ -91,7 +73,7 @@ class LocalEventBus(HandlerRegistry, EventPublisher):
         policies: Sequence[PolicyType] | None = None,
         cascade: HandlerFactoryCascade | None = None,
         modifiers: Sequence[ModifierFactory] = (),
-        sync_mode: bool = False,
+        dispatcher: EventDispatcher | None = None,
     ) -> None:
         """
         Initializes local event bus with given specification.
@@ -104,15 +86,21 @@ class LocalEventBus(HandlerRegistry, EventPublisher):
         (optional) custom handler factory cascade to customize
         policy into handler factory mapping
         :param modifiers: sequence of modifiers to be applied on new handler entries
+        :param dispatcher:
+        (optional) strategy that runs event handlers;
+        by default `BackgroundEventDispatcher` is used
+        (publishing does not wait for event handlers);
+        use `AwaitingEventDispatcher` to wait for event handlers when publishing
         """
-        scheduler_store = _EventSchedulerHandlerStore(sync_mode=sync_mode)
+        store = _EventCallHandlerStore()
         super().__init__(
-            store=scheduler_store,
+            store=store,
             policies=policies or [CallableHandlerPolicy()],
             cascade=cascade,
             modifiers=modifiers,
         )
-        self._scheduler = scheduler_store
+        self._calls = store
+        self._dispatcher = dispatcher or BackgroundEventDispatcher()
 
     async def publish(self, obj: Any, **kwargs: Any) -> None:
         """
@@ -120,4 +108,12 @@ class LocalEventBus(HandlerRegistry, EventPublisher):
         :param obj: event object
         :param kwargs: event extra arguments
         """
-        await self._scheduler.schedule(ActionSubject(subject=obj, inject=kwargs))
+        action = ActionSubject(subject=obj, inject=kwargs)
+        await self._dispatcher.dispatch(self._calls.calls(action.key), action)
+
+    async def drain(self) -> None:
+        """
+        Waits until all event handlers started by this bus are finished.
+        Useful for graceful shutdown when events are processed in background.
+        """
+        await self._dispatcher.drain()

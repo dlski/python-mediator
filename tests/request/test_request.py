@@ -1,7 +1,10 @@
+from typing import Any
+
 import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
+from mediator.common.types import ActionCallType, ActionSubject
 from mediator.request import LocalRequestBus, RequestHandlerRegistry
 from tests.common.test_modifiers import MockupModifierFactory
 
@@ -47,3 +50,29 @@ async def test_local_request_executor():
 
     with pytest.raises(LookupHandlerStoreError):
         await executor.execute(object())
+
+
+@pytest.mark.asyncio
+async def test_local_request_executor_include_iterator():
+    registry = RequestHandlerRegistry()
+    registry.register(_handle_a)
+
+    executor = LocalRequestBus()
+    executor.include(iter(registry))
+    assert await executor.execute(_RequestA(), seq=["x"]) == ["x"]
+
+
+class _BrokenModifierFactory:
+    def create(self, call: ActionCallType, *, target: ActionCallType) -> ActionCallType:
+        async def _op(action: ActionSubject) -> Any:
+            return (await call(action)).result
+
+        return _op
+
+
+@pytest.mark.asyncio
+async def test_local_request_executor_result_type():
+    executor = LocalRequestBus(modifiers=[_BrokenModifierFactory()])
+    executor.register(_handle_a)
+    with pytest.raises(TypeError, match="ActionResult"):
+        await executor.execute(_RequestA(), seq=[])
