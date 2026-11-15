@@ -1,11 +1,17 @@
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, assert_type
 
 import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
 from mediator.common.types import ActionCallType, ActionSubject
-from mediator.request import LocalRequestBus, RequestHandlerRegistry
+from mediator.request import (
+    LocalRequestBus,
+    Request,
+    RequestExecutor,
+    RequestHandlerRegistry,
+)
 from tests.common.test_modifiers import MockupModifierFactory
 
 
@@ -88,3 +94,28 @@ async def test_local_request_executor_union_handler():
 
     assert await executor.execute(_RequestA()) is _RequestA
     assert await executor.execute(_RequestB()) is _RequestB
+
+
+@dataclass(frozen=True, slots=True)
+class _GetLength(Request[int]):
+    text: str
+
+
+@pytest.mark.asyncio
+async def test_local_request_executor_typed_result() -> None:
+    executor = LocalRequestBus()
+
+    @executor.register
+    async def _handle(request: _GetLength) -> int:
+        return len(request.text)
+
+    result = await executor.execute(_GetLength("test"))
+    assert_type(result, int)
+    assert result == 4
+
+    port: RequestExecutor = executor
+    assert_type(await port.execute(_GetLength("test")), int)
+
+    # result type of plain request object is not known
+    executor.register(_handle_a)
+    assert_type(await port.execute(_RequestA(), seq=[]), Any)

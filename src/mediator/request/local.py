@@ -1,5 +1,5 @@
 from collections.abc import Hashable, Sequence
-from typing import Any
+from typing import Any, overload
 
 from mediator.common.factory import (
     CallableHandlerPolicy,
@@ -14,7 +14,7 @@ from mediator.common.registry import (
     MappingHandlerStore,
 )
 from mediator.common.types import ActionCallType, ActionResult, ActionSubject
-from mediator.request.base import RequestExecutor
+from mediator.request.base import R, Request, RequestExecutor
 
 
 class _RequestExecutorHandlerStore(MappingHandlerStore):
@@ -100,6 +100,12 @@ class LocalRequestBus(HandlerRegistry, RequestExecutor):
             modifiers=modifiers,
         )
         self._executor = executor_store
+
+    @overload
+    async def execute(self, obj: Request[R], **kwargs: Any) -> R: ...
+
+    @overload
+    async def execute(self, obj: Any, **kwargs: Any) -> Any: ...
 
     async def execute(self, obj: Any, **kwargs: Any) -> Any:
         """
