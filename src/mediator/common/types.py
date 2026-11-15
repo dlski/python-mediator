@@ -3,11 +3,14 @@ from dataclasses import dataclass
 from typing import Any
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ActionSubject:
     """
     Unified action subject.
     Holds primary and extra injection arguments for action handler.
+
+    Object is immutable; to pass changed subject or arguments down the call stack
+    create new one, i.e. using `dataclasses.replace`.
     """
 
     subject: Any
@@ -19,10 +22,10 @@ class ActionSubject:
         Action subject key. Used to find corresponding action handler.
         :return: action subject key
         """
-        return type(self.subject)  # type: ignore
+        return type(self.subject)  # type: ignore[return-value]
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ActionResult:
     """
     Library unified action result object.

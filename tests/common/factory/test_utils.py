@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import replace
 
 import pytest
 
@@ -174,7 +175,7 @@ async def test_direct_handler_create_successful(
 
     details = get_details(sig)
     arg = arg_get(details)
-    details.obj = obj
+    details = replace(details, obj=obj)
     handler = handler_create(details, arg, obj)
 
     result = await handler(ActionSubject(subject="test", inject={"x": 1, "y": 2}))

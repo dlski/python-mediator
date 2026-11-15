@@ -7,7 +7,7 @@ from mediator.common.modifiers import ModifierFactory, ModifierStack
 from mediator.common.types import ActionCallType
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class HandlerEntry:
     """
     Handler entry - combines handler with call modifiers.

@@ -4,7 +4,7 @@ from inspect import Parameter
 from typing import Any, get_type_hints
 
 
-@dataclass
+@dataclass(frozen=True)
 class CallableArg:
     """
     Stores information about given callable argument.
@@ -18,7 +18,7 @@ class CallableArg:
     is_positional: bool
 
 
-@dataclass
+@dataclass(frozen=True)
 class CallableType:
     """
     Stores information about callable type.
@@ -32,7 +32,7 @@ class CallableType:
     is_async: bool
 
 
-@dataclass
+@dataclass(frozen=True)
 class CallableIODetails:
     """
     Stores all information about input arguments and output data type.
@@ -58,7 +58,7 @@ class CallableIODetails:
         return None
 
 
-@dataclass
+@dataclass(frozen=True)
 class CallableDetails(CallableType, CallableIODetails):
     """
     Stores all inspection data about callable.

@@ -9,6 +9,8 @@ class HandlerInfo(Protocol):
     An abstraction that defines handler specification interface.
     """
 
+    __slots__ = ()
+
     @property
     def key(self) -> Hashable:
         """
@@ -32,6 +34,8 @@ class Handler(HandlerInfo, Protocol):
     An abstraction that unifies the handler specification and invocation interface.
     Is an adapter to the underlying object complexity.
     """
+
+    __slots__ = ()
 
     async def __call__(self, action: ActionSubject) -> ActionResult:
         """

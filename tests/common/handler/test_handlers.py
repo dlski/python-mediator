@@ -66,3 +66,21 @@ async def test_callable_handler_error(action: ActionSubject):
     )
     with pytest.raises(_SpecificError):
         await handler(action)
+
+
+@pytest.mark.parametrize("subject_name", [None, "subject"])
+@pytest.mark.asyncio
+async def test_callable_handler_keeps_action_untouched(
+    action: ActionSubject, subject_name
+):
+    handler = CallableHandler(
+        obj=_fn,
+        fn=_fn,
+        key=str,
+        subject_name=subject_name,
+        arg_map={},
+        allow_args=None,
+    )
+    await handler(action)
+    assert action.inject == {"a": 10, "b": 20}
+    assert not hasattr(handler, "__dict__")

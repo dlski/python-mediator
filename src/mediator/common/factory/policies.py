@@ -15,7 +15,7 @@ class MappablePolicy:
         return self
 
 
-@dataclass
+@dataclass(frozen=True)
 class CallableHandlerPolicy(MappablePolicy):
     """
     Callable handler policy.
@@ -52,7 +52,7 @@ class CallableHandlerPolicy(MappablePolicy):
             return self
 
 
-@dataclass
+@dataclass(frozen=True)
 class MethodHandlerPolicy(MappablePolicy):
     """
     Method handler policy.

@@ -4,10 +4,6 @@ from typing import Any
 from mediator.common.handler.base import Handler
 from mediator.common.types import ActionResult, ActionSubject
 
-_Kwargs = dict[str, Any]
-_KwargsMap = Callable[[_Kwargs], _Kwargs]
-_ArgsFormer = Callable[[Any, _Kwargs], tuple[tuple[Any, ...], _Kwargs]]
-
 
 class CallableHandler(Handler):
     """
@@ -16,7 +12,7 @@ class CallableHandler(Handler):
     with prepared arguments sourced from action object.
     """
 
-    __slots__ = ("_arg_filter", "_arg_map", "_args", "_fn", "_key", "_obj")
+    __slots__ = ("_allow_args", "_arg_map", "_fn", "_key", "_obj", "_subject_name")
 
     def __init__(
         self,
@@ -45,9 +41,9 @@ class CallableHandler(Handler):
         self._obj = obj
         self._fn = fn
         self._key = key
-        self._arg_map = self._arg_map_factory(arg_map)
-        self._arg_filter = self._arg_filter_factory(allow_args)
-        self._args = self._args_factory(subject_name)
+        self._subject_name = subject_name or None
+        self._arg_map = dict(arg_map)
+        self._allow_args = None if allow_args is None else frozenset(allow_args)
 
     @property
     def key(self) -> Hashable:
@@ -71,78 +67,30 @@ class CallableHandler(Handler):
         :param action: action containing call values
         :return: callable returned value wrapped into `ActionResult` object
         """
-        kwargs = self._arg_map(action.inject)
-        kwargs = self._arg_filter(kwargs)
-        args, kwargs = self._args(action.subject, kwargs)
-        result = await self._fn(*args, **kwargs)
+        kwargs = self._kwargs(action.inject)
+        if self._subject_name is None:
+            result = await self._fn(action.subject, **kwargs)
+        else:
+            kwargs[self._subject_name] = action.subject
+            result = await self._fn(**kwargs)
         return ActionResult(result)
 
-    @classmethod
-    def _arg_map_factory(cls, arg_map: Mapping[str, str]) -> _KwargsMap:
+    def _kwargs(self, inject: Mapping[str, Any]) -> dict[str, Any]:
         """
-        Argument mapping factory.
-        Provides function that maps dictionary of keyword args
-        to another one that fits into callable spec.
-        :param arg_map: action arg name into callable arg name mapping
-        :return: function that performs keyword args dict mapping
+        Forms underlying callable keyword arguments from action extra arguments:
+        translates names using argument map and drops not allowed ones.
+        :param inject: action extra arguments
+        :return: new dictionary of callable keyword arguments;
+        action extra arguments are never modified
         """
+        arg_map = self._arg_map
         if arg_map:
-
-            def _arg_map(kwargs: _Kwargs) -> _Kwargs:
-                return {
-                    arg_map.get(name, name): value for name, value in kwargs.items()
-                }
-
+            kwargs = {arg_map.get(name, name): value for name, value in inject.items()}
         else:
-
-            def _arg_map(kwargs: _Kwargs) -> _Kwargs:
-                return kwargs
-
-        return _arg_map
-
-    @classmethod
-    def _arg_filter_factory(cls, allow_args: Collection[str] | None) -> _KwargsMap:
-        """
-        Argument filter factory.
-        Provides function that filters dictionary of underlying callable keyword args.
-        :param allow_args: collection of action only necessary argument names,
-        used to make filter removing excessive arguments
-        that may not fit into callable signature
-        :return: function that filters dictionary of underlying callable keyword args
-        """
-        if allow_args is None:
-
-            def _arg_filter(kwargs: _Kwargs) -> _Kwargs:
-                return kwargs
-
-        else:
-            args = set(allow_args)
-
-            def _arg_filter(kwargs: _Kwargs) -> _Kwargs:
-                return {name: value for name, value in kwargs.items() if name in args}
-
-        return _arg_filter
-
-    @classmethod
-    def _args_factory(cls, subject_name: str | None) -> _ArgsFormer:
-        """
-        Argument former factory.
-        Provides function that forms underlying callable *args and **kwargs
-        regarding to subject (main argument name) name .
-        :param subject_name: main argument name;
-        when is not None, action main argument (subject) is provided as keyword arg,
-        else action main argument (subject) is placed as positional one
-        :return: function that forms underlying callable *args and **kwargs
-        """
-        if subject_name:
-
-            def _args(subject: Any, kwargs: _Kwargs) -> tuple[tuple[Any, ...], _Kwargs]:
-                kwargs[subject_name] = subject
-                return (), kwargs
-
-        else:
-
-            def _args(subject: Any, kwargs: _Kwargs) -> tuple[tuple[Any, ...], _Kwargs]:
-                return (subject,), kwargs
-
-        return _args
+            kwargs = dict(inject)
+        allow_args = self._allow_args
+        if allow_args is not None:
+            kwargs = {
+                name: value for name, value in kwargs.items() if name in allow_args
+            }
+        return kwargs
