@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from mediator.request import LocalRequestBus
+from mediator.request import LocalRequestBus, Request
 
 bus = LocalRequestBus()
 
@@ -18,13 +18,15 @@ async def command_handler(event: PrintMessageCommand):
     return event.message
 
 
+# Request base class is optional: it tells type checker
+# what is the result type of request execution
 @dataclass
-class DataQuery:
+class DataQuery(Request[dict[str, object]]):
     id: int
 
 
 @bus.register
-async def query_handler(query: DataQuery):
+async def query_handler(query: DataQuery) -> dict[str, object]:
     print(f"data query: {query.id}")
     return {"id": query.id, "data": "test"}
 

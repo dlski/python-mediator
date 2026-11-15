@@ -49,6 +49,7 @@ async def test_event_advanced():
 
     # publish event
     await bus.publish(MessageEvent(message="test"))
+    await bus.drain()
 
     # output:
     #   from object handler: test
