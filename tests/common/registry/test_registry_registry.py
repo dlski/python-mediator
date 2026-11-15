@@ -12,7 +12,7 @@ from mediator.common.factory import (
 )
 from mediator.common.modifiers import ModifierFactory
 from mediator.common.registry import CollectionHandlerStore, HandlerRegistry
-from mediator.common.test.test_modifiers import MockupModifierFactory
+from tests.common.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionSubject
 
 

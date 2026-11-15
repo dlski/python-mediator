@@ -5,9 +5,8 @@ description = "Python mediator bus microframework for CQRS + ES"
 authors = ["Damian Łukawski <damian@lukawscy.pl>"]
 license = "MIT"
 packages = [
-    { include = "mediator" },
+    { include = "mediator", from = "src" },
 ]
-exclude = ["**/test/*"]
 readme = "README.md"
 homepage = "https://github.com/dlski/python-mediator"
 repository = "https://github.com/dlski/python-mediator"

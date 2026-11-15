@@ -3,8 +3,8 @@ from typing import Callable
 import pytest
 
 from mediator.common.registry import HandlerEntry
-from mediator.common.registry.test.conftest import MockupHandler
-from mediator.common.test.test_modifiers import MockupModifierFactory
+from tests.common.registry.conftest import MockupHandler
+from tests.common.test_modifiers import MockupModifierFactory
 from mediator.common.types import ActionResult, ActionSubject
 
 

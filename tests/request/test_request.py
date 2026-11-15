@@ -4,7 +4,7 @@ import pytest
 
 from mediator.common.factory import CallableHandlerPolicy
 from mediator.common.registry import LookupHandlerStoreError
-from mediator.common.test.test_modifiers import MockupModifierFactory
+from tests.common.test_modifiers import MockupModifierFactory
 from mediator.request import LocalRequestBus, RequestHandlerRegistry
 
 

@@ -33,10 +33,10 @@ jobs:
       #----------------------------------------------
       - run: python -m pip install black flake8 isort mypy pytest
       - run: |
-          flake8 mediator/ example/
-          black mediator/ example/ --check
-          isort mediator/ example/ --check
-          mypy mediator/ example/
+          flake8 src/ tests/ example/
+          black src/ tests/ example/ --check
+          isort src/ tests/ example/ --check
+          mypy src/ tests/ example/
 
   tests:
     needs: [lints]
@@ -47,7 +47,7 @@ jobs:
       matrix:
         python-version: ['3.7', '3.8', '3.9', '3.10', 'pypy-3.7']
     env:
-      PYTHONPATH: .
+      PYTHONPATH: src
       PYTHON: ${{ matrix.python-version }}
 
     steps:
@@ -78,7 +78,7 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          pytest mediator/ example/ --cov
+          pytest tests/ example/ --cov
         env:
           COVERAGE_FILE: coverage/.coverage.py${{ matrix.python-version }}
       #----------------------------------------------
