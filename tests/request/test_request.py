@@ -76,3 +76,15 @@ async def test_local_request_executor_result_type():
     executor.register(_handle_a)
     with pytest.raises(TypeError, match="ActionResult"):
         await executor.execute(_RequestA(), seq=[])
+
+
+@pytest.mark.asyncio
+async def test_local_request_executor_union_handler():
+    executor = LocalRequestBus()
+
+    @executor.register
+    async def _handle(request: _RequestA | _RequestB):
+        return type(request)
+
+    assert await executor.execute(_RequestA()) is _RequestA
+    assert await executor.execute(_RequestB()) is _RequestB

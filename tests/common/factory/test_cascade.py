@@ -42,7 +42,7 @@ async def test_handler_factory_cascade_success(obj):
     cascade = HandlerFactoryCascade(
         policies=[CallableHandlerPolicy(), MethodHandlerPolicy(name="method")]
     )
-    handler = cascade(obj)
+    [handler] = cascade(obj)
     await _check_handler_works(handler)
 
 
@@ -55,7 +55,7 @@ async def test_handler_factory_cascade_replace():
         cascade(obj)
 
     cascade = cascade.replace(policies=[MethodHandlerPolicy(name="method")])
-    handler = cascade(obj)
+    [handler] = cascade(obj)
     await _check_handler_works(handler)
 
 

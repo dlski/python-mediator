@@ -1,4 +1,7 @@
+import inspect
+import sys
 from collections.abc import Sequence
+from typing import Annotated
 
 import pytest
 
@@ -139,3 +142,38 @@ def b_check(details: CallableDetails):
 def test_callable_inspector(fn, test_fn):
     result = CallableInspector.inspect(fn)
     test_fn(result)
+
+
+# noinspection PyUnusedLocal
+async def unresolvable_a(x: X, other: "Missing") -> "X":  # type: ignore[name-defined]  # noqa: F821
+    return x
+
+
+# noinspection PyUnusedLocal
+async def unresolvable_b(x: "X", other: "inspect.Missing"):  # type: ignore[name-defined]
+    pass
+
+
+# noinspection PyUnusedLocal
+async def unresolvable_c(x: 'Annotated[X, "meta"]', other: "Missing"):  # type: ignore[name-defined]  # noqa: F821
+    pass
+
+
+@pytest.mark.parametrize("fn", [unresolvable_a, unresolvable_b, unresolvable_c])
+def test_callable_inspector_unresolvable_annotation(fn):
+    details = CallableInspector.inspect(fn)
+    _check_arg(details.args, types=[X, None])
+
+
+def test_callable_inspector_unresolvable_return_annotation():
+    assert CallableInspector.inspect(unresolvable_a).return_type is X
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 14), reason="requires deferred evaluation of annotations"
+)
+def test_callable_inspector_unresolvable_deferred_annotation():
+    namespace = {"X": X}
+    exec("async def fn(x: X, other: Missing): pass", namespace)
+    details = CallableInspector.inspect(namespace["fn"])
+    _check_arg(details.args, types=[X, None])

@@ -99,9 +99,9 @@ class HandlerFactoryCascade:
         self._mapper = mapper
         self._factories = mapper.map_all(policies)
 
-    def __call__(self, obj: Any) -> Handler:
+    def __call__(self, obj: Any) -> Sequence[Handler]:
         """
-        Tries to create handler object for given python object
+        Tries to create handler objects for given python object
         (compatible with cascade policy sequence).
         :param obj: any compatible python object
         :raises InspectionHandlerFactoryCascadeError:
@@ -109,7 +109,8 @@ class HandlerFactoryCascade:
         :raises IncompatibleHandlerFactoryCascadeError:
         when object cannot be mapped by any handler factory -
         is incompatible cascade configuration
-        :return: handler object for given python object
+        :return: handler objects for given python object
+        (one for every action subject type accepted by it)
         """
         factory_errors = []
         for factory in self._factories:

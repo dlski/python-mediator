@@ -1,5 +1,6 @@
 from collections.abc import Sequence
-from typing import Any
+from types import NoneType, UnionType
+from typing import Any, Union, get_args, get_origin
 
 from mediator.common.factory.base import (
     HandlerFactoryError,
@@ -71,8 +72,6 @@ def find_subject_arg(details: CallableDetails, name: str | None = None) -> Calla
     :raises IncompatibleHandlerFactoryError: when callable has no arguments
     :raises IncompatibleHandlerFactoryError: when argument name was specified,
     but no matching argument was found
-    :raises HandlerFactoryError:
-    when for found primary argument cannot be determined unequivocal type
     :return: primary argument details
     """
     if not details.args:
@@ -88,24 +87,47 @@ def find_subject_arg(details: CallableDetails, name: str | None = None) -> Calla
             )
     else:
         arg = details.args[0]
-
-    if arg.type is None:
-        raise HandlerFactoryError(
-            f"Callable {details.obj!r} argument {arg.name} has no type annotation"
-        )
-    if not isinstance(arg.type, type):
-        raise HandlerFactoryError(
-            f"Callable {details.obj!r} argument {arg.name}"
-            f" type annotation is not a type"
-        )
     return arg
 
 
-def create_callable_handler(
-    details: CallableDetails, obj: Any, policy: CallableHandlerPolicy
-) -> Handler:
+def subject_types(details: CallableDetails, arg: CallableArg) -> tuple[type, ...]:
     """
-    Creates callable handler using given specification.
+    Provides action subject types accepted by given primary callable argument.
+    :param details: callable details
+    :param arg: primary argument details
+    :raises HandlerFactoryError: when argument has no type annotation
+    or its type annotation cannot be resolved
+    :raises HandlerFactoryError: when argument type annotation
+    is not a type or union of types
+    :return: single type or all types of union (like `A | B`) in declared order
+    """
+    annotation = arg.type
+    if annotation is None:
+        raise HandlerFactoryError(
+            f"Callable {details.obj!r} argument {arg.name} has no type annotation"
+            f" or it cannot be resolved"
+        )
+
+    types: tuple[Any, ...]
+    if get_origin(annotation) in (Union, UnionType):
+        types = get_args(annotation)
+    else:
+        types = (annotation,)
+
+    if not all(isinstance(type_, type) and type_ is not NoneType for type_ in types):
+        raise HandlerFactoryError(
+            f"Callable {details.obj!r} argument {arg.name}"
+            f" type annotation is not a type or union of types"
+        )
+    return types
+
+
+def create_callable_handlers(
+    details: CallableDetails, obj: Any, policy: CallableHandlerPolicy
+) -> Sequence[Handler]:
+    """
+    Creates callable handlers using given specification:
+    one for every action subject type accepted by callable.
     :param details: details of callable to be invoked by handler
     :param obj: underlying object
     - source of callable object and handler behaviour information object
@@ -115,9 +137,10 @@ def create_callable_handler(
     :raises HandlerFactoryError:
     when for primary (subject) argument cannot be determined unequivocal type
     :raises HandlerFactoryError: when callable object is not async callable
-    :return: handler object that can call underlying callable using provided action
+    :return: handler objects that can call underlying callable using provided action
     """
     arg = find_subject_arg(details, policy.subject_arg)
+    types = subject_types(details, arg)
     if not details.is_async:
         raise HandlerFactoryError(f"Object {details.obj!r} is not async callable")
 
@@ -136,11 +159,14 @@ def create_callable_handler(
         # only arguments that fit into callable signature are provided
         allow_args = {arg.name for arg in details.args}
 
-    return CallableHandler(
-        obj=obj,
-        fn=details.obj,
-        key=arg.type,
-        subject_name=subject_name,
-        arg_map=policy.arg_map,
-        allow_args=allow_args,
-    )
+    return [
+        CallableHandler(
+            obj=obj,
+            fn=details.obj,
+            key=type_,
+            subject_name=subject_name,
+            arg_map=policy.arg_map,
+            allow_args=allow_args,
+        )
+        for type_ in types
+    ]

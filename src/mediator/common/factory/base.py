@@ -28,14 +28,17 @@ class HandlerFactory(Protocol):
     form underlying object.
     """
 
-    def create(self, obj: Any) -> Handler:
+    def create(self, obj: Any) -> Sequence[Handler]:
         """
-        Creates handler for given object.
-        :param obj: object to create handler for
+        Creates handlers for given object.
+
+        Usually single handler is created, but object that accepts
+        many action subject types (like `A | B`) gets one handler for each type.
+        :param obj: object to create handlers for
         :raises IncompatibleHandlerFactoryError: when object is incompatible
         with factory specification
         :raises HandlerFactoryError: when there is failure during object inspection
-        :return: handler for given object
+        :return: handlers for given object
         """
         ...
 

@@ -174,3 +174,18 @@ async def test_local_event_bus_include_iterator():
 
     await bus.publish("test")
     assert handled == ["test"]
+
+
+@pytest.mark.asyncio
+async def test_local_event_bus_union_handler():
+    handled: list[object] = []
+    bus = LocalEventBus(dispatcher=AwaitingEventDispatcher())
+
+    @bus.register
+    async def _handler(event: _MockupEvent1 | _MockupEvent2):
+        handled.append(event)
+
+    first, second = _MockupEvent1(), _MockupEvent2()
+    await bus.publish(first)
+    await bus.publish(second)
+    assert handled == [first, second]

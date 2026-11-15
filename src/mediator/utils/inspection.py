@@ -1,7 +1,13 @@
 import inspect
+import sys
 from dataclasses import dataclass
 from inspect import Parameter
-from typing import Any, get_type_hints
+from typing import Annotated, Any, ForwardRef, get_args, get_origin, get_type_hints
+
+if sys.version_info >= (3, 14):
+    import annotationlib
+
+    _FORWARDREF = annotationlib.Format.FORWARDREF
 
 
 @dataclass(frozen=True)
@@ -124,8 +130,8 @@ class CallableInspector:
         """
         if not inspect.isroutine(fn):
             fn = fn.__call__
-        signature = inspect.signature(fn)
-        annotations = get_type_hints(fn)
+        signature = _signature(fn)
+        annotations = _type_hints(fn)
         return CallableIODetails(
             args=[
                 CallableArg(
@@ -142,3 +148,58 @@ class CallableInspector:
             ),
             return_type=annotations.get("return"),
         )
+
+
+def _type_hints(fn: Any) -> dict[str, Any]:
+    """
+    Provides resolved annotations of given callable.
+
+    Works like `typing.get_type_hints`, but annotation that cannot be resolved
+    (i.e. name imported only for type checking) does not fail the other ones.
+    Such annotation is omitted in result.
+    :param fn: callable to inspect
+    :return: argument name (or `return`) to resolved annotation mapping
+    """
+    try:
+        return get_type_hints(fn)
+    except (NameError, AttributeError):
+        pass
+
+    globalns = getattr(inspect.unwrap(fn), "__globals__", {})
+    hints: dict[str, Any] = {}
+    for name, annotation in _raw_annotations(fn).items():
+        if isinstance(annotation, str):
+            try:
+                annotation = eval(annotation, globalns)
+            except Exception:
+                continue
+        elif isinstance(annotation, ForwardRef):
+            continue
+        if get_origin(annotation) is Annotated:
+            annotation = get_args(annotation)[0]
+        hints[name] = annotation
+    return hints
+
+
+def _signature(fn: Any) -> inspect.Signature:
+    """
+    Provides signature of given callable without failing on unresolvable annotations.
+    :param fn: callable to inspect
+    :return: callable signature
+    """
+    if sys.version_info >= (3, 14):
+        # annotations are evaluated lazily, so reading them may fail
+        return inspect.signature(fn, annotation_format=_FORWARDREF)
+    return inspect.signature(fn)
+
+
+def _raw_annotations(fn: Any) -> dict[str, Any]:
+    """
+    Provides annotations of given callable without failing on unresolvable ones.
+    :param fn: callable to inspect
+    :return: argument name (or `return`) to annotation mapping,
+    where not evaluated annotation is a string or forward reference object
+    """
+    if sys.version_info >= (3, 14):
+        return annotationlib.get_annotations(fn, format=_FORWARDREF)
+    return inspect.get_annotations(fn)

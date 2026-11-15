@@ -44,7 +44,7 @@ async def _check_handler(handler: Handler):
 @pytest.mark.asyncio
 async def test_callable_handler_factory(obj, policy: CallableHandlerPolicy):
     factory = CallableHandlerFactory(policy)
-    handler = factory.create(obj)
+    [handler] = factory.create(obj)
     await _check_handler(handler)
 
 
@@ -65,5 +65,5 @@ async def test_callable_handler_factory(obj, policy: CallableHandlerPolicy):
 @pytest.mark.asyncio
 async def test_method_handler_factory(obj, policy: MethodHandlerPolicy):
     factory = MethodHandlerFactory(policy)
-    handler = factory.create(obj)
+    [handler] = factory.create(obj)
     await _check_handler(handler)

@@ -116,13 +116,13 @@ class HandlerRegistry(HandlerStore):
         modifiers: Sequence[ModifierFactory],
     ) -> None:
         """
-        Creates handler entry for given raw action handler object.
+        Creates handler entries for given raw action handler object.
         :param obj: raw action handler object
         :param cascade: cascade to use for handler factory
         :param modifiers: modifiers to be directly applied on given handler entry
         """
-        handler = cascade(obj)
-        self.add(HandlerEntry(handler=handler, modifiers=modifiers))
+        for handler in cascade(obj):
+            self.add(HandlerEntry(handler=handler, modifiers=modifiers))
 
     def add(self, entry: HandlerEntry) -> None:
         """

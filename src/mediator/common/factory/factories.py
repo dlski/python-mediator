@@ -1,9 +1,10 @@
+from collections.abc import Sequence
 from typing import Any
 
 from mediator.common.factory.base import HandlerFactory
 from mediator.common.factory.policies import CallableHandlerPolicy, MethodHandlerPolicy
 from mediator.common.factory.utils import (
-    create_callable_handler,
+    create_callable_handlers,
     inspect_attribute,
     inspect_callable,
 )
@@ -25,17 +26,18 @@ class CallableHandlerFactory(HandlerFactory):
         """
         self._policy = policy
 
-    def create(self, obj: Any) -> Handler:
+    def create(self, obj: Any) -> Sequence[Handler]:
         """
-        Creates handler directly form callable object.
+        Creates handlers directly form callable object.
         :param obj: callable object
         :raises IncompatibleHandlerFactoryError: when callable object is incompatible
         with factory specification
         :raises HandlerFactoryError: when there is failure during object inspection
-        :return: handler invoking given callable object
+        :return: handlers invoking given callable object
+        (one for every action subject type accepted by it)
         """
         details = inspect_callable(obj)
-        return create_callable_handler(details, obj=obj, policy=self._policy)
+        return create_callable_handlers(details, obj=obj, policy=self._policy)
 
 
 class MethodHandlerFactory(HandlerFactory):
@@ -54,15 +56,16 @@ class MethodHandlerFactory(HandlerFactory):
         """
         self._policy = policy
 
-    def create(self, obj: Any) -> Handler:
+    def create(self, obj: Any) -> Sequence[Handler]:
         """
-        Creates handler from given object attribute according to specification.
+        Creates handlers from given object attribute according to specification.
         :param obj: callable object
         :raises IncompatibleHandlerFactoryError: when callable object is incompatible
         with factory specification
         :raises HandlerFactoryError: when there is failure during object inspection
-        :return: handler invoking given object callable attribute
+        :return: handlers invoking given object callable attribute
+        (one for every action subject type accepted by it)
         """
         policy = self._policy
         details = inspect_attribute(obj, policy.name, policy.subtype_of)
-        return create_callable_handler(details, obj=obj, policy=policy.policy)
+        return create_callable_handlers(details, obj=obj, policy=policy.policy)

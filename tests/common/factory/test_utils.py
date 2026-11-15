@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import replace
+from typing import Union
 
 import pytest
 
@@ -9,10 +10,11 @@ from mediator.common.factory import (
     IncompatibleHandlerFactoryError,
 )
 from mediator.common.factory.utils import (
-    create_callable_handler,
+    create_callable_handlers,
     find_subject_arg,
     inspect_attribute,
     inspect_callable,
+    subject_types,
 )
 from mediator.common.types import ActionResult, ActionSubject
 
@@ -128,7 +130,7 @@ def test_subject_arg_get(
     details = inspect_callable(obj)
     if error:
         with pytest.raises(error) as e:
-            find_subject_arg(details, name)
+            subject_types(details, find_subject_arg(details, name))
         if error_message:
             assert error_message in str(e.value)
     else:
@@ -165,7 +167,7 @@ async def test_direct_handler_create_successful(
 ):
     policy = CallableHandlerPolicy(subject_arg=name, arg_map=arg_map, arg_strict=True)
     details = replace(inspect_callable(sig), obj=obj)
-    handler = create_callable_handler(details, obj=obj, policy=policy)
+    [handler] = create_callable_handlers(details, obj=obj, policy=policy)
 
     result = await handler(ActionSubject(subject="test", inject={"x": 1, "y": 2}))
     assert isinstance(result, ActionResult)
@@ -182,5 +184,61 @@ def test_direct_handler_create_fail(obj, error, error_message):
     policy = CallableHandlerPolicy(subject_arg="arg", arg_strict=True)
     details = inspect_callable(obj)
     with pytest.raises(error) as e:
-        create_callable_handler(details, obj=obj, policy=policy)
+        create_callable_handlers(details, obj=obj, policy=policy)
+    assert error_message in str(e.value)
+
+
+class _D:
+    @staticmethod
+    async def union(arg: _A | _C, x: int):
+        pass
+
+    @staticmethod
+    async def typing_union(arg: Union[_A, _C], x: int):  # noqa: UP007
+        pass
+
+    @staticmethod
+    async def single(arg: _A, x: int):
+        pass
+
+    @staticmethod
+    async def unresolvable(arg: "Missing", x: int):  # type: ignore[name-defined]  # noqa: F821
+        pass
+
+    @staticmethod
+    async def generic(arg: list[_A], x: int):
+        pass
+
+
+@pytest.mark.parametrize(
+    ("obj", "expected_types"),
+    [
+        (_D.union, (_A, _C)),
+        (_D.typing_union, (_A, _C)),
+        (_D.single, (_A,)),
+    ],
+)
+def test_subject_types(obj, expected_types: tuple[type, ...]):
+    details = inspect_callable(obj)
+    arg = find_subject_arg(details)
+    assert subject_types(details, arg) == expected_types
+
+    handlers = create_callable_handlers(
+        details, obj=obj, policy=CallableHandlerPolicy()
+    )
+    assert tuple(handler.key for handler in handlers) == expected_types
+
+
+@pytest.mark.parametrize(
+    ("obj", "error_message"),
+    [
+        (_D.unresolvable, "cannot be resolved"),
+        (_D.generic, "not a type or union of types"),
+    ],
+)
+def test_subject_types_fail(obj, error_message: str):
+    details = inspect_callable(obj)
+    arg = find_subject_arg(details)
+    with pytest.raises(HandlerFactoryError) as e:
+        subject_types(details, arg)
     assert error_message in str(e.value)
