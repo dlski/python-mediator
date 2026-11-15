@@ -3,10 +3,9 @@ from typing import Any
 from mediator.common.factory.base import HandlerFactory
 from mediator.common.factory.policies import CallableHandlerPolicy, MethodHandlerPolicy
 from mediator.common.factory.utils import (
-    CallableAttributeDetails,
-    CallableHandlerCreate,
-    CallableObjDetails,
-    HandlerSubjectArgGet,
+    create_callable_handler,
+    inspect_attribute,
+    inspect_callable,
 )
 from mediator.common.handler import Handler
 
@@ -24,13 +23,7 @@ class CallableHandlerFactory(HandlerFactory):
         :param policy: policy used as a configuration or specification
         for producing handler object
         """
-        self._obj_details = CallableObjDetails()
-        self._arg_get = HandlerSubjectArgGet(name=policy.subject_arg)
-        self._handler_create = CallableHandlerCreate(
-            subject_as_keyword=policy.subject_as_keyword,
-            arg_map=policy.arg_map,
-            arg_strict=policy.arg_strict,
-        )
+        self._policy = policy
 
     def create(self, obj: Any) -> Handler:
         """
@@ -41,9 +34,8 @@ class CallableHandlerFactory(HandlerFactory):
         :raises HandlerFactoryError: when there is failure during object inspection
         :return: handler invoking given callable object
         """
-        details = self._obj_details(obj)
-        arg = self._arg_get(details)
-        return self._handler_create(details=details, arg=arg, obj=obj)
+        details = inspect_callable(obj)
+        return create_callable_handler(details, obj=obj, policy=self._policy)
 
 
 class MethodHandlerFactory(HandlerFactory):
@@ -60,16 +52,7 @@ class MethodHandlerFactory(HandlerFactory):
         :param policy: policy used as a configuration or specification
         for producing handler object
         """
-        self._attribute_details = CallableAttributeDetails(
-            name=policy.name, owner_subtype_of=policy.subtype_of
-        )
-        callable_policy = policy.policy
-        self._arg_get = HandlerSubjectArgGet(name=callable_policy.subject_arg)
-        self._handler_create = CallableHandlerCreate(
-            subject_as_keyword=callable_policy.subject_as_keyword,
-            arg_map=callable_policy.arg_map,
-            arg_strict=callable_policy.arg_strict,
-        )
+        self._policy = policy
 
     def create(self, obj: Any) -> Handler:
         """
@@ -80,6 +63,6 @@ class MethodHandlerFactory(HandlerFactory):
         :raises HandlerFactoryError: when there is failure during object inspection
         :return: handler invoking given object callable attribute
         """
-        details = self._attribute_details(obj)
-        arg = self._arg_get(details)
-        return self._handler_create(details=details, arg=arg, obj=obj)
+        policy = self._policy
+        details = inspect_attribute(obj, policy.name, policy.subtype_of)
+        return create_callable_handler(details, obj=obj, policy=policy.policy)

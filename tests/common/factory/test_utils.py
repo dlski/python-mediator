@@ -3,12 +3,16 @@ from dataclasses import replace
 
 import pytest
 
-from mediator.common.factory import HandlerFactoryError, IncompatibleHandlerFactoryError
+from mediator.common.factory import (
+    CallableHandlerPolicy,
+    HandlerFactoryError,
+    IncompatibleHandlerFactoryError,
+)
 from mediator.common.factory.utils import (
-    CallableAttributeDetails,
-    CallableHandlerCreate,
-    CallableObjDetails,
-    HandlerSubjectArgGet,
+    create_callable_handler,
+    find_subject_arg,
+    inspect_attribute,
+    inspect_callable,
 )
 from mediator.common.types import ActionResult, ActionSubject
 
@@ -52,12 +56,10 @@ class _C:
 
 
 def test_callable_obj_details():
-    get_details = CallableObjDetails()
-
-    assert get_details(_B().method).return_type == _A
+    assert inspect_callable(_B().method).return_type == _A
 
     with pytest.raises(IncompatibleHandlerFactoryError) as e:
-        get_details(_A())
+        inspect_callable(_A())
     assert "not callable" in str(e.value)
 
 
@@ -77,14 +79,13 @@ def test_callable_attribute_details(
     error: type[Exception] | None,
     error_message: str | None,
 ):
-    get_details = CallableAttributeDetails(name="method", owner_subtype_of=subtype_of)
     if error:
         with pytest.raises(error) as e:
-            get_details(obj)
+            inspect_attribute(obj, "method", subtype_of)
         if error_message:
             assert error_message in str(e.value)
     else:
-        details = get_details(obj)
+        details = inspect_attribute(obj, "method", subtype_of)
         assert details.return_type == _A
 
 
@@ -124,17 +125,14 @@ def test_subject_arg_get(
     error: type[Exception] | None,
     error_message: str | None,
 ):
-    get_details = CallableObjDetails()
-    arg_get = HandlerSubjectArgGet(name=name)
-
-    details = get_details(obj)
+    details = inspect_callable(obj)
     if error:
         with pytest.raises(error) as e:
-            arg_get(details)
+            find_subject_arg(details, name)
         if error_message:
             assert error_message in str(e.value)
     else:
-        arg = arg_get(details)
+        arg = find_subject_arg(details, name)
         assert arg.name == expected_name
 
 
@@ -165,18 +163,9 @@ async def test_direct_handler_create_successful(
     arg_map: dict[str, str],
     expected_result,
 ):
-    get_details = CallableObjDetails()
-    arg_get = HandlerSubjectArgGet(name=name)
-    handler_create = CallableHandlerCreate(
-        subject_as_keyword=name is not None,
-        arg_map=arg_map,
-        arg_strict=True,
-    )
-
-    details = get_details(sig)
-    arg = arg_get(details)
-    details = replace(details, obj=obj)
-    handler = handler_create(details, arg, obj)
+    policy = CallableHandlerPolicy(subject_arg=name, arg_map=arg_map, arg_strict=True)
+    details = replace(inspect_callable(sig), obj=obj)
+    handler = create_callable_handler(details, obj=obj, policy=policy)
 
     result = await handler(ActionSubject(subject="test", inject={"x": 1, "y": 2}))
     assert isinstance(result, ActionResult)
@@ -190,14 +179,8 @@ async def test_direct_handler_create_successful(
     ],
 )
 def test_direct_handler_create_fail(obj, error, error_message):
-    get_details = CallableObjDetails()
-    arg_get = HandlerSubjectArgGet(name="arg")
-    handler_create = CallableHandlerCreate(
-        subject_as_keyword=False, arg_map={}, arg_strict=True
-    )
-
-    details = get_details(obj)
-    arg = arg_get(details)
+    policy = CallableHandlerPolicy(subject_arg="arg", arg_strict=True)
+    details = inspect_callable(obj)
     with pytest.raises(error) as e:
-        handler_create(details, arg, obj)
+        create_callable_handler(details, obj=obj, policy=policy)
     assert error_message in str(e.value)
